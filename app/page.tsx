@@ -1,4 +1,3 @@
-import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import Tournaments from "@/components/Tournaments";
 import Features from "@/components/Features";
@@ -31,15 +30,9 @@ export default function Home() {
 
   return (
     <>
-      <Navbar />
       <Hero />
-
-      {/* Move Tournaments up */}
       <Tournaments tournaments={tournaments} />
-
-      {/* Features goes below */}
       <Features />
-
       <Results />
       <News />
       <Sponsors />

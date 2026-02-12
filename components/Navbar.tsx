@@ -10,18 +10,16 @@ export default function Navbar() {
     { name: "Home", href: "/" },
     { name: "Tournaments", href: "/tournaments" },
     { name: "Rankings", href: "/rankings" },
+    { name: "Gallery", href: "/gallery" },
     { name: "Login", href: "/login" },
   ];
 
   return (
     <nav className="bg-black text-white px-6 py-4 flex justify-between items-center">
-      
-      {/* Logo */}
       <Link href="/" className="font-bold text-lg">
         TN TTA
       </Link>
 
-      {/* Navigation Links */}
       <div className="flex space-x-8">
         {navLinks.map((link) => (
           <Link
@@ -37,7 +35,6 @@ export default function Navbar() {
           </Link>
         ))}
       </div>
-
     </nav>
   );
 }
