@@ -1,7 +1,74 @@
 [
   {
-    "id": "1770872933137",
-    "tournamentId": "1",
-    "name": "rohith"
+    "id": "1771863636857",
+    "firstName": "rohith",
+    "lastName": "ganesan",
+    "gender": "Male",
+    "dob": "2002-01-01",
+    "district": "Ariyalur",
+    "contact": "7894561230",
+    "coach": "Kannan",
+    "club": "SKJ Sports Club",
+    "category": "Senior",
+    "password": "$2b$10$itoMlJmph96VjUbAOQz4g.dLJUud3q7I3s07tCHq.ZYBTcphudeMG",
+    "role": "player",
+    "createdAt": "2026-02-23T16:20:36.857Z"
+  },
+  {
+    "id": "1771909121908",
+    "firstName": "teqsr",
+    "lastName": "ffff",
+    "gender": "Male",
+    "dob": "1999-12-31",
+    "district": "Ariyalur",
+    "contact": "978411111101",
+    "coach": "Kannan",
+    "club": "SKJ Sports Club",
+    "category": "Senior",
+    "password": "$2b$10$Qo8eZufxV1DoihkhCfdBYOAj1wo6jPuNd6o6rZxwAw/xX2sEobd8.",
+    "role": "player",
+    "createdAt": "2026-02-24T04:58:41.908Z"
+  },
+  {
+    "id": "PLY_1771951496358",
+    "firstName": "sasi ",
+    "lastName": "tharan",
+    "gender": "Male",
+    "dob": "2003-02-04",
+    "district": "Ariyalur",
+    "contact": "7563214890",
+    "club": "SKJ Sports Club",
+    "category": "Senior",
+    "password": "$2b$10$7yHc/xZlf8niwYY.mLKhx.6m5Ll5pAlgadlqvO9CbsLDC.eRf8usm",
+    "role": "player",
+    "createdAt": "2026-02-24T16:44:56.359Z"
+  },
+  {
+    "id": "PLY_1771952386694",
+    "firstName": "sri",
+    "lastName": "varshan",
+    "gender": "Male",
+    "dob": "2001-07-11",
+    "district": "Nagapattinam",
+    "contact": "5912367849",
+    "club": "SKJ Sports Club",
+    "category": "Senior",
+    "password": "$2b$10$byQaEFTIetSCqslrnqeUge9IjQV/gwTd1j1GJuaL2jLOiELsU9AO.",
+    "role": "player",
+    "createdAt": "2026-02-24T16:59:46.694Z"
+  },
+  {
+    "id": "PLY_1772000069814",
+    "firstName": "Test",
+    "lastName": "Test",
+    "gender": "Male",
+    "dob": "2000-01-01",
+    "district": "Nagapattinam",
+    "contact": "0123654789",
+    "club": "SKJ Sports Club",
+    "category": "Mens",
+    "password": "$2b$10$dhTZ7LbaNt905xH1LxzmXuhhUHp3OWqL/.Y9sDvhnW/jLc5t/QfVK",
+    "role": "player",
+    "createdAt": "2026-02-25T06:14:29.814Z"
   }
 ]

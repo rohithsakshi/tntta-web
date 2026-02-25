@@ -1,12 +1,14 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 
 export type Tournament = {
-  name: string;
-  date: string;
+  id: string;
+  title: string;
   location: string;
-  image: string;
+  startDate: string;
+  endDate: string;
 };
 
 export default function TournamentCard({
@@ -18,38 +20,31 @@ export default function TournamentCard({
     <motion.div
       whileHover={{ y: -10 }}
       transition={{ type: "spring", stiffness: 200 }}
-      className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 cursor-pointer"
+      className="group relative rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-500 bg-black text-white"
     >
-      {/* Image */}
-      <div className="relative h-60 overflow-hidden">
-        <img
-          src={tournament.image}
-          alt={tournament.name}
-          className="w-full h-full object-cover transition duration-700 group-hover:scale-110"
-        />
+      <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-black to-gray-800" />
 
-        {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
-
-        {/* Date badge */}
-        <span className="absolute top-4 left-4 bg-orange-500 text-white text-xs px-4 py-1 rounded-full shadow-md group-hover:scale-110 transition">
-          {tournament.date}
+      <div className="relative p-8 h-60 flex flex-col justify-between">
+        <span className="bg-orange-500 text-white text-xs px-4 py-1 rounded-full shadow-md w-fit">
+          {tournament.startDate} → {tournament.endDate}
         </span>
-      </div>
 
-      {/* Content */}
-      <div className="absolute bottom-6 left-6 text-white">
-        <h3 className="text-xl font-semibold mb-1">
-          {tournament.name}
-        </h3>
-        <p className="text-sm opacity-80">
-          {tournament.location}
-        </p>
+        <div>
+          <h3 className="text-xl font-semibold mb-1">
+            {tournament.title}
+          </h3>
 
-        {/* CTA on hover */}
-        <span className="opacity-0 group-hover:opacity-100 transition duration-300 text-orange-400 text-sm mt-2 inline-block">
-          View Details →
-        </span>
+          <p className="text-sm opacity-80 mb-4">
+            📍 {tournament.location}
+          </p>
+
+          <Link
+            href={`/tournaments/${tournament.id}/register`}
+            className="px-4 py-2 rounded text-sm bg-green-500 hover:bg-green-600 transition inline-block"
+          >
+            Apply Now
+          </Link>
+        </div>
       </div>
     </motion.div>
   );

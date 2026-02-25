@@ -6,27 +6,24 @@ import News from "@/components/News";
 import Sponsors from "@/components/Sponsors";
 import Footer from "@/components/Footer";
 
-export default function Home() {
-  const tournaments = [
-  {
-    name: "Tamil Nadu State TT Open",
-    date: "June 5–7",
-    location: "Avinashi Ground",
-    image: "/tn-state-open.jpg",
-  },
-  {
-    name: "South Zone Championship",
-    date: "June 20–23",
-    location: "Gachibowli Stadium",
-    image: "/south-zone.jpg",
-  },
-  {
-    name: "Indian Nationals Grand Finals",
-    date: "August 16–20",
-    location: "Indira Gandhi Indoor",
-    image: "/nationals-finals.jpg",
-  },
-];
+async function getTournaments() {
+  try {
+    const res = await fetch("http://localhost:3000/api/tournaments", {
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      return [];
+    }
+
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
+export default async function Home() {
+  const tournaments = await getTournaments();
 
   return (
     <>

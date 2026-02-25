@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
-import bcrypt from "bcryptjs";
 
 const dataDir = path.join(process.cwd(), "data");
-const filePath = path.join(dataDir, "registrations.json");
+const filePath = path.join(dataDir, "applications.json");
 
 /* =========================
    File Utilities
@@ -36,7 +35,7 @@ function writeData(data: any) {
 }
 
 /* =========================
-   POST - Create Player Registration
+   POST - Apply to Tournament
 ========================= */
 
 export async function POST(request: Request) {
@@ -44,95 +43,101 @@ export async function POST(request: Request) {
     const body = await request.json();
 
     const {
-      firstName,
+      tournamentId,
+      playerName,
       lastName,
       gender,
       dob,
       district,
       contact,
+      coach,
       club,
       category,
-      password,
+      paymentStatus,
+      transactionId,
     } = body;
 
-    // Basic validation
+    /* ---------------------------
+       Required Fields Check
+    --------------------------- */
     if (
-      !firstName ||
-      !lastName ||
-      !gender ||
-      !dob ||
-      !district ||
-      !contact ||
-      !club ||
+      !tournamentId ||
+      !playerName ||
       !category ||
-      !password
+      paymentStatus !== "PAID" ||
+      !transactionId
     ) {
       return NextResponse.json(
-        { error: "All fields including password are required" },
+        { error: "Payment required before application" },
         { status: 400 }
       );
     }
 
-    const registrations = readData();
+    const applications = readData();
 
-    // Better duplicate check (contact should be unique)
-    const existingUser = registrations.find(
-      (user: any) =>
-        user.contact === contact
+    /* ---------------------------
+       Prevent Duplicate Application
+    --------------------------- */
+    const alreadyApplied = applications.find(
+      (app: any) =>
+        app.tournamentId === tournamentId &&
+        app.playerName === playerName
     );
 
-    if (existingUser) {
+    if (alreadyApplied) {
       return NextResponse.json(
-        { error: "User already exists with this contact number" },
+        { error: "You have already applied for this tournament" },
         { status: 400 }
       );
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    const newPlayer = {
-      id: "PLY_" + Date.now(),
-      firstName,
+    /* ---------------------------
+       Create Application
+    --------------------------- */
+    const newApplication = {
+      id: "APP_" + Date.now(),
+      tournamentId,
+      playerName,
       lastName,
       gender,
       dob,
       district,
       contact,
+      coach,
       club,
       category,
-      password: hashedPassword,
-      role: "player",
-      createdAt: new Date().toISOString(),
+      paymentStatus,
+      transactionId,
+      appliedAt: new Date().toISOString(),
     };
 
-    registrations.push(newPlayer);
-    writeData(registrations);
+    applications.push(newApplication);
+    writeData(applications);
 
     return NextResponse.json(
-      { message: "Registration successful", playerId: newPlayer.id },
+      { message: "Application successful", data: newApplication },
       { status: 201 }
     );
 
   } catch (error) {
     return NextResponse.json(
-      { error: "Server error during registration" },
+      { error: "Server error during application" },
       { status: 500 }
     );
   }
 }
 
 /* =========================
-   GET - Fetch Registrations
+   GET - Fetch Applications
 ========================= */
 
 export async function GET() {
   try {
-    const registrations = readData();
-    return NextResponse.json(registrations, { status: 200 });
+    const applications = readData();
+    return NextResponse.json(applications, { status: 200 });
   } catch {
     return NextResponse.json(
-      { error: "Unable to fetch registrations" },
+      { error: "Unable to fetch applications" },
       { status: 500 }
     );
   }
