@@ -12,8 +12,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Simulate payment gateway delay
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    /* ---------------------------
+       Simulate Real Gateway Delay
+       5 Seconds Processing
+    --------------------------- */
+    await new Promise((resolve) => setTimeout(resolve, 5000));
 
     // Generate fake transaction ID
     const transactionId = "TXN_" + Date.now();
@@ -23,6 +26,7 @@ export async function POST(req: Request) {
       transactionId,
       amount,
       status: "PAID",
+      paidAt: new Date().toISOString(),
     });
 
   } catch (error) {

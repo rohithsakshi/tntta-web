@@ -62,12 +62,12 @@ export default function Hero() {
           </p>
 
           <div className="flex gap-4 flex-wrap">
-            <Link
-              href="/register"
-              className="bg-orange-500 px-6 py-2 rounded-md hover:bg-orange-600 transition"
-            >
-              Register
-            </Link>
+           <Link
+  href="/tournaments"
+  className="bg-orange-500 px-6 py-2 rounded-md hover:bg-orange-600 transition"
+>
+  Register
+</Link>
 
             <Link
               href="/rankings"

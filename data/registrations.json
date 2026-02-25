@@ -70,5 +70,33 @@
     "password": "$2b$10$dhTZ7LbaNt905xH1LxzmXuhhUHp3OWqL/.Y9sDvhnW/jLc5t/QfVK",
     "role": "player",
     "createdAt": "2026-02-25T06:14:29.814Z"
+  },
+  {
+    "id": "PLY_1772027908336",
+    "firstName": "sri",
+    "lastName": "sri",
+    "gender": "Male",
+    "dob": "1998-02-02",
+    "district": "Nilgiris",
+    "contact": "9874563210",
+    "club": "SKJ Sports Club",
+    "category": "Senior",
+    "password": "$2b$10$5hEja3NICuXj/QCZLIC3ueDvXQaqbnNh4qFNO9oVlhJ1FAwgJRu9q",
+    "role": "player",
+    "createdAt": "2026-02-25T13:58:28.336Z"
+  },
+  {
+    "id": "PLY_1772028372243",
+    "firstName": "player",
+    "lastName": "player",
+    "gender": "Male",
+    "dob": "2000-01-25",
+    "district": "Kanchipuram",
+    "contact": "0213654789",
+    "club": "SKJ Sports Club",
+    "category": "Senior",
+    "password": "$2b$10$5jbqAklqmFgOMpaMZrzcbewZVoffsdPHjmeCo/XGInPCS36lveoae",
+    "role": "player",
+    "createdAt": "2026-02-25T14:06:12.243Z"
   }
 ]

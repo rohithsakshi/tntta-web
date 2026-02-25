@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export type Tournament = {
   id: string;
@@ -16,6 +17,26 @@ export default function TournamentCard({
 }: {
   tournament: Tournament;
 }) {
+
+  const [applied, setApplied] = useState(false);
+
+  useEffect(() => {
+    const user = localStorage.getItem("user");
+    if (!user) return;
+
+    fetch("/api/applications")
+      .then(res => res.json())
+      .then(data => {
+        const alreadyApplied = data.some(
+          (app: any) =>
+            app.tournamentId === tournament.id &&
+            app.playerName === user
+        );
+
+        setApplied(alreadyApplied);
+      });
+  }, [tournament.id]);
+
   return (
     <motion.div
       whileHover={{ y: -10 }}
@@ -38,12 +59,18 @@ export default function TournamentCard({
             📍 {tournament.location}
           </p>
 
-          <Link
-            href={`/tournaments/${tournament.id}/register`}
-            className="px-4 py-2 rounded text-sm bg-green-500 hover:bg-green-600 transition inline-block"
-          >
-            Apply Now
-          </Link>
+          {applied ? (
+            <span className="px-4 py-2 rounded text-sm bg-green-600 inline-block">
+              Applied
+            </span>
+          ) : (
+            <Link
+              href={`/tournaments/${tournament.id}/register`}
+              className="px-4 py-2 rounded text-sm bg-green-500 hover:bg-green-600 transition inline-block"
+            >
+              Apply Now
+            </Link>
+          )}
         </div>
       </div>
     </motion.div>

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { Home } from "lucide-react";
+import Link from "next/link";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -71,11 +73,17 @@ export default function LoginPage() {
       {/* Right Side */}
       <div className="flex w-full lg:w-1/2 items-center justify-center bg-gray-100 px-8 h-full">
         <motion.div
+        
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="bg-white p-10 rounded-2xl shadow-xl w-full max-w-md"
-        >
+className="relative bg-white p-10 rounded-2xl shadow-xl w-full max-w-md"        >
+          <Link
+  href="/"
+  className="absolute top-5 right-5 text-gray-500 hover:text-orange-500 transition"
+>
+  <Home size={22} />
+</Link>
           <h1 className="text-2xl font-bold text-gray-800 mb-6">
             Login to TN TTA
           </h1>

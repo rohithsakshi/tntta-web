@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import PaymentModal from "@/components/PaymentModal";
+import Popup from "@/components/Popup";
 
 type Category = {
   name: string;
@@ -57,9 +59,13 @@ export default function RegisterPage() {
   const [eligibleCategories, setEligibleCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [showModal, setShowModal] = useState(false);
 
-  // Age + Category Calculation
+  const [showPayment, setShowPayment] = useState(false);
+  const [popupMessage, setPopupMessage] = useState("");
+
+  /* ---------------------------
+     Age Calculation
+  --------------------------- */
   useEffect(() => {
     if (!form.dob) {
       setAge(null);
@@ -89,14 +95,15 @@ export default function RegisterPage() {
 
     setEligibleCategories(filtered);
 
-    // Reset category if not eligible anymore
     if (!filtered.some((c) => c.name === form.category)) {
       setForm((prev) => ({ ...prev, category: "" }));
     }
-
   }, [form.dob]);
 
-  const handleSubmit = async (e: any) => {
+  /* ---------------------------
+     Submit → Open Payment
+  --------------------------- */
+  const handleSubmit = (e: any) => {
     e.preventDefault();
     setError("");
 
@@ -115,6 +122,14 @@ export default function RegisterPage() {
       return;
     }
 
+    setShowPayment(true);
+  };
+
+  /* ---------------------------
+     After Payment Success
+  --------------------------- */
+  const handlePaymentSuccess = async () => {
+    setShowPayment(false);
     setLoading(true);
 
     try {
@@ -132,7 +147,7 @@ export default function RegisterPage() {
         throw new Error(data.error || "Registration failed");
       }
 
-      setShowModal(true);
+      setPopupMessage("Payment Successful! Registration Completed!");
 
     } catch (err: any) {
       setError(err.message);
@@ -261,26 +276,28 @@ export default function RegisterPage() {
               disabled={loading}
               className="col-span-full bg-orange-500 text-white py-3 rounded-lg hover:bg-orange-600 transition"
             >
-              {loading ? "Submitting..." : "Submit Registration"}
+              Submit Registration
             </button>
           </form>
         </div>
       </div>
 
-      {showModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/40 backdrop-blur-sm z-50">
-          <div className="bg-white rounded-xl p-6 shadow-xl text-center">
-            <h2 className="text-xl font-semibold mb-4">
-              Registration Successful!
-            </h2>
-            <button
-              onClick={()=>router.push("/login")}
-              className="bg-green-500 text-white px-4 py-2 rounded"
-            >
-              Go to Login
-            </button>
-          </div>
-        </div>
+      {showPayment && (
+        <PaymentModal
+          amount={500}
+          onSuccess={handlePaymentSuccess}
+          onClose={() => setShowPayment(false)}
+        />
+      )}
+
+      {popupMessage && (
+        <Popup
+          message={popupMessage}
+          onClose={() => {
+            setPopupMessage("");
+            router.push("/login");
+          }}
+        />
       )}
     </>
   );

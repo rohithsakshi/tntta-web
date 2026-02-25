@@ -27,7 +27,7 @@ export default function Navbar() {
 
   return (
     <nav className="bg-black text-white px-8 h-20 flex justify-between items-center shadow-md">
-      
+
       <Link href="/" className="relative -mt-2">
         <Image
           src="/logo-dark.png"
@@ -55,23 +55,24 @@ export default function Navbar() {
           Tournaments
         </Link>
 
-        {role === "admin" && (
-          <Link
-            href="/admin"
-            className={pathname === "/admin" ? "text-orange-400 font-semibold" : "hover:text-orange-400"}
-          >
-            Admin
-          </Link>
-        )}
-
-        {/* 🔥 Show Name Instead of Logout */}
         {user ? (
-          <button
-            onClick={handleLogout}
-            className="text-orange-400 font-semibold hover:text-orange-300 transition"
-          >
-            {user}
-          </button>
+          <>
+            {role === "admin" && (
+              <Link
+                href="/admin"
+                className="text-orange-500 font-semibold hover:text-orange-400"
+              >
+                Admin
+              </Link>
+            )}
+
+            <button
+              onClick={handleLogout}
+              className="text-orange-400 font-semibold hover:text-orange-300 transition"
+            >
+              Logout
+            </button>
+          </>
         ) : (
           <Link
             href="/login"
