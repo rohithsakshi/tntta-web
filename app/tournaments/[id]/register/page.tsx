@@ -94,49 +94,19 @@ export default function TournamentRegisterPage() {
   /* ---------------------------
      After Payment Success
   --------------------------- */
-  const handlePaymentSuccess = async (transactionId: string) => {
-    setShowPayment(false);
-    setLoading(true);
+const handlePaymentSuccess = async (transactionId: string) => {
 
-    try {
-      const res = await fetch("/api/applications", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          tournamentId,
-          playerName: firstName,
-          lastName,
-          gender,
-          dob,
-          district,
-          contact,
-          coach,
-          club,
-          category: selectedCategory,
-          paymentStatus: "PAID",
-          transactionId,
-        }),
-      });
+  setShowPayment(false);
+  setLoading(true);
 
-      const data = await res.json();
+  setTimeout(() => {
 
-      if (!res.ok) {
-        setPopupMessage(data.error || "Application failed");
-        setRedirectAfterClose(false);
-        setLoading(false);
-        return;
-      }
+    setPopupMessage("Payment Successful! Application Submitted!");
+    setRedirectAfterClose(true);
+    setLoading(false);
 
-      setPopupMessage("Payment Successful! Application Submitted!");
-      setRedirectAfterClose(true);
-
-    } catch {
-      setPopupMessage("Server error. Please try again.");
-      setRedirectAfterClose(false);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, 800);
+};
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center px-6 py-10">

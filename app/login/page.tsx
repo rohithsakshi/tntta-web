@@ -16,40 +16,25 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: any) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
+  e.preventDefault();
+  setError("");
+  setLoading(true);
 
-    try {
-      const res = await fetch("/api/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ firstName, password, role }),
-      });
+  setTimeout(() => {
+    const roleLower = role.toLowerCase();
 
-      const data = await res.json();
+    localStorage.setItem("user", firstName || "Demo User");
+    localStorage.setItem("role", roleLower);
 
-      if (!res.ok) {
-        throw new Error(data.error || "Login failed");
-      }
-
-      // ✅ Always store server-confirmed role
-      localStorage.setItem("user", firstName);
-      localStorage.setItem("role", data.role);
-
-      // ✅ Redirect based on API response
-      if (data.role === "admin") {
-        router.push("/admin");
-      } else {
-        router.push("/");
-      }
-
-    } catch (err: any) {
-      setError(err.message);
-    } finally {
-      setLoading(false);
+    if (roleLower === "admin") {
+      router.push("/admin");
+    } else {
+      router.push("/");
     }
-  };
+
+    setLoading(false);
+  }, 800);
+};
 
   return (
     <div className="h-screen w-screen overflow-hidden flex">

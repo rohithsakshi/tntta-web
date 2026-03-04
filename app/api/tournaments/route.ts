@@ -1,7 +1,37 @@
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
+
+const dataDir = path.join(process.cwd(), "data");
+const filePath = path.join(dataDir, "tournaments.json");
+
+function ensureFileExists() {
+  if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir);
+  }
+
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, "[]");
+  }
+}
+
+function readData() {
+  ensureFileExists();
+  const file = fs.readFileSync(filePath, "utf8");
+  try {
+    return JSON.parse(file);
+  } catch {
+    return [];
+  }
+}
+
+function writeData(data: any) {
+  ensureFileExists();
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
 
 /* =========================
-   POST - Create Tournament (Demo Mode)
+   POST - Create Tournament
 ========================= */
 
 export async function POST(request: Request) {
@@ -16,11 +46,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Simulate server delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const tournaments = readData();
 
     const newTournament = {
-      id: "TNT_" + Date.now(),
+      id: Date.now().toString(),
       title,
       location,
       startDate,
@@ -28,15 +57,14 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     };
 
+    tournaments.push(newTournament);
+    writeData(tournaments);
+
     return NextResponse.json(
-      {
-        message: "Tournament created successfully (Demo Mode)",
-        data: newTournament,
-      },
+      { message: "Tournament created successfully", data: newTournament },
       { status: 201 }
     );
-
-  } catch {
+  } catch (error) {
     return NextResponse.json(
       { error: "Server error creating tournament" },
       { status: 500 }
@@ -45,20 +73,17 @@ export async function POST(request: Request) {
 }
 
 /* =========================
-   GET - Fetch Tournaments (Demo Mode)
+   GET - Fetch Tournaments
 ========================= */
 
 export async function GET() {
-  return NextResponse.json(
-    [
-      {
-        id: "TNT_1",
-        title: "7th TNTTA State Ranking Table Tennis Tournament 2025",
-        location: "SK Academy, Chennai",
-        startDate: "2026-02-25",
-        endDate: "2026-02-28",
-      },
-    ],
-    { status: 200 }
-  );
+  try {
+    const tournaments = readData();
+    return NextResponse.json(tournaments, { status: 200 });
+  } catch {
+    return NextResponse.json(
+      { error: "Unable to fetch tournaments" },
+      { status: 500 }
+    );
+  }
 }

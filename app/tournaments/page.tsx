@@ -22,12 +22,35 @@ export default function TournamentsPage() {
   const [user, setUser] = useState<string | null>(null);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    setUser(storedUser);
 
-    fetchTournaments();
-    fetchApplications();
-  }, []);
+  const storedUser = localStorage.getItem("user");
+  setUser(storedUser);
+
+  setTournaments([
+    {
+      id: "1",
+      title: "Tamil Nadu State Championship",
+      location: "Chennai",
+      startDate: "2026-07-10",
+      endDate: "2026-07-12",
+    },
+    {
+      id: "2",
+      title: "Coimbatore Open",
+      location: "Coimbatore",
+      startDate: "2026-08-02",
+      endDate: "2026-08-04",
+    },
+    {
+      id: "3",
+      title: "Madurai District League",
+      location: "Madurai",
+      startDate: "2026-09-01",
+      endDate: "2026-09-03",
+    },
+  ]);
+
+}, []);
 
   const fetchTournaments = async () => {
     const res = await fetch("/api/tournaments");

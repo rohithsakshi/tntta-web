@@ -6,24 +6,32 @@ import News from "@/components/News";
 import Sponsors from "@/components/Sponsors";
 import Footer from "@/components/Footer";
 
-async function getTournaments() {
-  try {
-    const res = await fetch("http://localhost:3000/api/tournaments", {
-      cache: "no-store",
-    });
+export default function Home() {
 
-    if (!res.ok) {
-      return [];
-    }
-
-    return res.json();
-  } catch {
-    return [];
-  }
-}
-
-export default async function Home() {
-  const tournaments = await getTournaments();
+  const tournaments = [
+    {
+      id: "1",
+      title: "7th TNTTA State Ranking Table Tennis Tournament 2025",
+      location: "SK Academy, Chennai",
+      startDate: "2026-02-25",
+      endDate: "2026-02-28",
+    },
+    {
+      id: "2",
+      title: "Coimbatore District Championship",
+      location: "Coimbatore Sports Arena",
+      startDate: "2026-03-10",
+      endDate: "2026-03-12",
+    },
+    {
+      id: "3",
+      title: "Madurai Open Table Tennis Tournament",
+      location: "Madurai Indoor Stadium",
+      startDate: "2026-04-05",
+      endDate: "2026-04-07",
+    },
+    
+  ];
 
   return (
     <>

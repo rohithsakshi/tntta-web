@@ -12,16 +12,50 @@ export default function AdminPage() {
   const [endDate, setEndDate] = useState("");
   const [popupMessage, setPopupMessage] = useState("");
 
-  useEffect(() => {
-    const role = localStorage.getItem("role");
-    if (role !== "admin") {
-      window.location.href = "/login";
-      return;
-    }
+ useEffect(() => {
+  const role = localStorage.getItem("role");
 
-    fetchRegistrations();
-    fetchTournaments();
-  }, []);
+  if (role !== "admin") {
+    window.location.href = "/login";
+    return;
+  }
+
+  setRegistrations([
+    {
+      id: 1,
+      firstName: "Arjun",
+      lastName: "Kumar",
+      gender: "Male",
+      district: "Chennai",
+      category: "Senior",
+    },
+    {
+      id: 2,
+      firstName: "Meena",
+      lastName: "Ravi",
+      gender: "Female",
+      district: "Madurai",
+      category: "Junior",
+    },
+  ]);
+
+  setTournaments([
+    {
+      id: "1",
+      title: "Tamil Nadu State Championship",
+      location: "Chennai",
+      startDate: "2026-07-10",
+      endDate: "2026-07-12",
+    },
+    {
+      id: "2",
+      title: "Coimbatore Open",
+      location: "Coimbatore",
+      startDate: "2026-08-02",
+      endDate: "2026-08-04",
+    },
+  ]);
+}, []);
 
   async function fetchRegistrations() {
     const res = await fetch("/api/registrations");
@@ -36,34 +70,20 @@ export default function AdminPage() {
   }
 
   async function createTournament() {
-    const res = await fetch("/api/tournaments", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        title,
-        location,
-        startDate,
-        endDate,
-      }),
-    });
 
-    const data = await res.json();
-
-    if (!res.ok) {
-      setPopupMessage(data.error || "Error creating tournament");
-      return;
-    }
-
-    setPopupMessage("Tournament Created Successfully!");
-
-    setTitle("");
-    setLocation("");
-    setStartDate("");
-    setEndDate("");
-
-    fetchTournaments();
+  if (!title || !location) {
+    setPopupMessage("Please fill tournament details");
+    return;
   }
 
+  setPopupMessage("Tournament Created Successfully! (Demo)");
+
+  setTitle("");
+  setLocation("");
+  setStartDate("");
+  setEndDate("");
+
+}
   return (
     <div className="min-h-screen p-16 bg-gray-50 space-y-12">
       <h1 className="text-4xl font-bold">Admin Dashboard</h1>

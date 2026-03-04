@@ -23,18 +23,7 @@ export default function TournamentCard({
   useEffect(() => {
     const user = localStorage.getItem("user");
     if (!user) return;
-
-    fetch("/api/applications")
-      .then(res => res.json())
-      .then(data => {
-        const alreadyApplied = data.some(
-          (app: any) =>
-            app.tournamentId === tournament.id &&
-            app.playerName === user
-        );
-
-        setApplied(alreadyApplied);
-      });
+ 
   }, [tournament.id]);
 
   return (

@@ -17,37 +17,20 @@ export default function PaymentModal({
   const [error, setError] = useState("");
 
   const handlePayment = async () => {
-    try {
-      setProcessing(true);
-      setError("");
 
-      const res = await fetch("/api/payments", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ amount }),
-      });
+  setProcessing(true);
 
-      const data = await res.json();
+  setTimeout(() => {
 
-      if (!res.ok || data.status !== "PAID") {
-        throw new Error(data.error || "Payment failed");
-      }
+    const fakeTxn =
+      "TXN" + Math.floor(Math.random() * 1000000000);
 
-      if (!data.transactionId) {
-        throw new Error("Transaction ID missing");
-      }
+    onSuccess(fakeTxn);
 
-      onSuccess(data.transactionId);
+    setProcessing(false);
 
-    } catch (err: any) {
-      setError(err.message || "Payment error");
-    } finally {
-      setProcessing(false);
-    }
-  };
-
+  }, 1500);
+};
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl shadow-2xl p-8 w-[400px] text-center">
