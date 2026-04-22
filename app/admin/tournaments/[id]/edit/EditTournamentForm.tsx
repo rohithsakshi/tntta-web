@@ -15,7 +15,11 @@ import {
   Loader2
 } from "lucide-react"
 import Link from "next/link"
-import type { TournamentType, Category, TournamentStatus } from "@prisma/client"
+import type { $Enums } from "@prisma/client"
+
+type TournamentType = $Enums.TournamentType
+type Category = $Enums.Category
+type TournamentStatus = $Enums.TournamentStatus
 
 interface EditTournamentFormProps {
   tournament: any

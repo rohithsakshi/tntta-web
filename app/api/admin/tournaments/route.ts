@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { auth } from "@/lib/auth"
-import { UserRole, TournamentStatus, TournamentType, Category } from "@prisma/client"
+import { UserRole, TournamentStatus } from "@prisma/client"
 import { z } from "zod"
 import { tournamentSchema } from "@/lib/validations"
 
