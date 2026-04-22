@@ -15,11 +15,10 @@ import {
   Loader2
 } from "lucide-react"
 import Link from "next/link"
-import type { $Enums } from "@prisma/client"
 
-type TournamentType = $Enums.TournamentType
-type Category = $Enums.Category
-type TournamentStatus = $Enums.TournamentStatus
+type TournamentType = "STATE_RANKING" | "DISTRICT_RANKING" | "STATE_CHAMPIONSHIP" | "INVITATIONAL" | "OPEN_TOURNAMENT"
+type Category = "MINI_CADET" | "CADET" | "SUB_JUNIOR" | "JUNIOR" | "SENIOR" | "MENS" | "VETERANS"
+type TournamentStatus = "DRAFT" | "UPCOMING" | "OPEN" | "CLOSED" | "ONGOING" | "COMPLETED" | "CANCELLED"
 
 interface EditTournamentFormProps {
   tournament: any
