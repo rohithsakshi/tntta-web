@@ -3,22 +3,7 @@ import prisma from "@/lib/prisma"
 import { auth } from "@/lib/auth"
 import { UserRole, TournamentStatus, TournamentType, Category } from "@prisma/client"
 import { z } from "zod"
-
-const tournamentSchema = z.object({
-  title: z.string().min(3),
-  type: z.nativeEnum(TournamentType),
-  description: z.string().min(10),
-  venue: z.string().min(5),
-  location: z.string().min(3),
-  startDate: z.string(),
-  endDate: z.string(),
-  registrationOpens: z.string(),
-  registrationDeadline: z.string(),
-  entryFee: z.number().min(0),
-  maxParticipants: z.number().optional(),
-  categories: z.array(z.nativeEnum(Category)),
-  status: z.nativeEnum(TournamentStatus).default(TournamentStatus.DRAFT),
-})
+import { tournamentSchema } from "@/lib/validations"
 
 export async function GET() {
   const session = await auth()
@@ -55,10 +40,7 @@ export async function POST(req: Request) {
       data: {
         ...validatedData,
         slug,
-        startDate: new Date(validatedData.startDate),
-        endDate: new Date(validatedData.endDate),
-        registrationOpens: new Date(validatedData.registrationOpens),
-        registrationDeadline: new Date(validatedData.registrationDeadline),
+        createdById: session.user.id,
       },
     })
 

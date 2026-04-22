@@ -20,7 +20,7 @@ import {
   Building2
 } from "lucide-react"
 import { toast } from "react-hot-toast"
-import { Category, Gender } from "@prisma/client"
+import type { Category, Gender } from "@prisma/client"
 
 const districts = [
   "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore", "Dharmapuri", 
@@ -33,13 +33,13 @@ const districts = [
 ]
 
 const categories = [
-  { id: Category.MINI_CADET, label: "Mini Cadet (U-10)", minAge: 0, maxAge: 10 },
-  { id: Category.CADET, label: "Cadet (11-12)", minAge: 11, maxAge: 12 },
-  { id: Category.SUB_JUNIOR, label: "Sub Junior (13-14)", minAge: 13, maxAge: 14 },
-  { id: Category.JUNIOR, label: "Junior (15-17)", minAge: 15, maxAge: 17 },
-  { id: Category.SENIOR, label: "Senior (18-39)", minAge: 18, maxAge: 39 },
-  { id: Category.MENS, label: "Mens (18+)", minAge: 18, maxAge: 150 },
-  { id: Category.VETERANS, label: "Veterans (40+)", minAge: 40, maxAge: 150 },
+  { id: "MINI_CADET" as Category, label: "Mini Cadet (U-10)", minAge: 0, maxAge: 10 },
+  { id: "CADET" as Category, label: "Cadet (11-12)", minAge: 11, maxAge: 12 },
+  { id: "SUB_JUNIOR" as Category, label: "Sub Junior (13-14)", minAge: 13, maxAge: 14 },
+  { id: "JUNIOR" as Category, label: "Junior (15-17)", minAge: 15, maxAge: 17 },
+  { id: "SENIOR" as Category, label: "Senior (18-39)", minAge: 18, maxAge: 39 },
+  { id: "MENS" as Category, label: "Mens (18+)", minAge: 18, maxAge: 150 },
+  { id: "VETERANS" as Category, label: "Veterans (40+)", minAge: 40, maxAge: 150 },
 ]
 
 export default function RegisterPage() {
@@ -53,7 +53,7 @@ export default function RegisterPage() {
     contact: "",
     password: "",
     confirmPassword: "",
-    gender: Gender.MALE as Gender,
+    gender: "MALE" as Gender,
     dob: "",
     district: "",
     club: "",
@@ -182,11 +182,11 @@ export default function RegisterPage() {
               <div className="mb-8">
                 <label className="block text-sm font-bold text-gray-700 mb-3">Gender *</label>
                 <div className="flex gap-4">
-                  {[Gender.MALE, Gender.FEMALE].map((g) => (
+                  {["MALE", "FEMALE"].map((g) => (
                     <button
                       key={g}
                       type="button"
-                      onClick={() => setFormData({ ...formData, gender: g })}
+                      onClick={() => setFormData({ ...formData, gender: g as Gender })}
                       className={`px-8 py-2 rounded-full text-sm font-bold transition-all border-2 ${
                         formData.gender === g 
                         ? "bg-[#E85D04] border-[#E85D04] text-white" 

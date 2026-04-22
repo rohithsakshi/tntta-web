@@ -25,6 +25,7 @@ export const tournamentSchema = z.object({
   venue: z.string(),
   startDate: z.string().transform((val) => new Date(val)),
   endDate: z.string().transform((val) => new Date(val)),
+  registrationOpens: z.string().transform((val) => new Date(val)),
   registrationDeadline: z.string().transform((val) => new Date(val)),
   entryFee: z.number().min(0),
   maxParticipants: z.number().optional().nullable(),

@@ -15,7 +15,7 @@ import {
   Loader2
 } from "lucide-react"
 import Link from "next/link"
-import { TournamentType, Category, TournamentStatus } from "@prisma/client"
+import type { TournamentType, Category, TournamentStatus } from "@prisma/client"
 
 export default function CreateTournamentPage() {
   const router = useRouter()
@@ -24,7 +24,7 @@ export default function CreateTournamentPage() {
 
   const [formData, setFormData] = useState({
     title: "",
-    type: TournamentType.STATE_RANKING,
+    type: "STATE_RANKING" as TournamentType,
     description: "",
     venue: "",
     location: "Chennai",
@@ -35,7 +35,7 @@ export default function CreateTournamentPage() {
     entryFee: 500,
     maxParticipants: 0,
     categories: [] as Category[],
-    status: TournamentStatus.DRAFT
+    status: "DRAFT" as TournamentStatus
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -95,7 +95,7 @@ export default function CreateTournamentPage() {
         </div>
         <div className="flex items-center gap-4">
            <button 
-             onClick={() => setFormData(prev => ({ ...prev, status: TournamentStatus.DRAFT }))}
+             onClick={() => setFormData(prev => ({ ...prev, status: "DRAFT" as TournamentStatus }))}
              className="px-6 py-3 bg-white border border-gray-100 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all shadow-sm"
            >
              SAVE AS DRAFT
@@ -146,7 +146,7 @@ export default function CreateTournamentPage() {
                 value={formData.type}
                 onChange={e => setFormData({ ...formData, type: e.target.value as TournamentType })}
               >
-                {(Object.values(TournamentType) as any[]).map(t => (
+                {["STATE_RANKING", "DISTRICT_RANKING", "STATE_CHAMPIONSHIP", "INVITATIONAL", "OPEN_TOURNAMENT"].map(t => (
                   <option key={t} value={t}>{t.replace("_", " ")}</option>
                 ))}
               </select>
@@ -250,18 +250,18 @@ export default function CreateTournamentPage() {
             Eligible Categories
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {Object.values(Category).map(cat => (
+            {["MINI_CADET", "CADET", "SUB_JUNIOR", "JUNIOR", "SENIOR", "MENS", "VETERANS"].map(cat => (
               <button
                 key={cat}
                 type="button"
-                onClick={() => toggleCategory(cat)}
+                onClick={() => toggleCategory(cat as Category)}
                 className={`p-5 rounded-2xl border text-center transition-all flex flex-col items-center gap-3 ${
-                  formData.categories.includes(cat)
+                  formData.categories.includes(cat as Category)
                     ? "bg-[#E85D04] border-[#E85D04] text-white shadow-lg shadow-[#E85D04]/20"
                     : "bg-gray-50 border-gray-100 text-gray-500 hover:border-[#E85D04]/30"
                 }`}
               >
-                {formData.categories.includes(cat) ? <CheckCircle2 size={24} /> : <div className="w-6 h-6 rounded-full border-2 border-current opacity-20" />}
+                {formData.categories.includes(cat as Category) ? <CheckCircle2 size={24} /> : <div className="w-6 h-6 rounded-full border-2 border-current opacity-20" />}
                 <span className="text-[10px] font-bold uppercase tracking-widest leading-tight">{cat.replace("_", " ")}</span>
               </button>
             ))}
