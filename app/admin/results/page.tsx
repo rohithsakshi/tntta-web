@@ -47,19 +47,19 @@ export default async function AdminResultsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <StatsCard 
           title="Active Tournaments"
-          value={tournaments.filter(t => t.status === "ONGOING").length}
+          value={tournaments.filter((t: any) => t.status === "ONGOING").length}
           icon={Activity} // Activity not imported, wait. Lucide Activity.
           color="orange"
         />
         <StatsCard 
           title="Total Matches Entered"
-          value={tournaments.reduce((acc, curr) => acc + curr._count.matches, 0)}
+          value={tournaments.reduce((acc: number, curr: any) => acc + curr._count.matches, 0)}
           icon={Target}
           color="blue"
         />
         <StatsCard 
           title="Awaiting Finalization"
-          value={tournaments.filter(t => t.status === "COMPLETED").length}
+          value={tournaments.filter((t: any) => t.status === "COMPLETED").length}
           icon={Clock}
           color="green"
         />
@@ -72,7 +72,7 @@ export default async function AdminResultsPage() {
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {tournaments.map((tourn) => (
+          {tournaments.map((tourn: any) => (
             <div key={tourn.id} className="bg-white rounded-[40px] p-8 border border-gray-100 shadow-sm hover:shadow-xl transition-all group">
               <div className="flex items-center justify-between mb-8">
                 <StatusBadge status={tourn.status} type="tournament" />

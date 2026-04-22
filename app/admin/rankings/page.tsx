@@ -85,7 +85,7 @@ export default async function AdminRankingsPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {CATEGORY_LIST.map((cat) => {
-            const count = categories.find(c => c.category === cat)?._count || 0
+            const count = categories.find((c: any) => c.category === cat)?._count || 0
             return (
               <Link 
                 key={cat}

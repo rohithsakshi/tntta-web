@@ -26,7 +26,7 @@ export default async function MyTournamentsPage() {
 
       {applications.length > 0 ? (
         <div className="grid grid-cols-1 gap-6">
-          {applications.map((app) => (
+          {applications.map((app: any) => (
             <div key={app.id} className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col md:flex-row">
               <div className="p-8 flex-1">
                 <div className="flex items-center gap-3 mb-4">

@@ -35,7 +35,7 @@ async function getTournaments() {
     })
   ])
 
-  const statsMap = stats.reduce((acc, curr) => {
+  const statsMap = stats.reduce((acc: any, curr: any) => {
     acc[curr.status] = curr._count
     return acc
   }, {} as Record<string, number>)
