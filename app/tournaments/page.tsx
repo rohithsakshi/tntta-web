@@ -1,116 +1,151 @@
-"use client";
+import Link from "next/link"
+import Image from "next/image"
+import { Calendar, MapPin, Trophy, Users, ChevronRight, Search } from "lucide-react"
+import { format } from "date-fns"
+import prisma from "@/lib/prisma"
+import { TournamentStatus } from "@prisma/client"
 
-import { useEffect, useState } from "react";
-import Link from "next/link";
+export const dynamic = "force-dynamic"
 
-type Tournament = {
-  id: string;
-  title: string;
-  location: string;
-  startDate: string;
-  endDate: string;
-};
+async function getTournaments(status?: string) {
+  return await prisma.tournament.findMany({
+    where: status && status !== "ALL" ? { status: status as TournamentStatus } : {},
+    orderBy: { startDate: "asc" },
+    include: {
+      _count: {
+        select: { applications: true }
+      }
+    }
+  })
+}
 
-type Application = {
-  tournamentId: string;
-  playerName: string;
-};
+export default async function TournamentsPage({ 
+  searchParams 
+}: { 
+  searchParams: Promise<{ status?: string }> 
+}) {
+  const { status } = await searchParams
+  const currentStatus = status || "ALL"
+  const tournaments = await getTournaments(currentStatus)
 
-export default function TournamentsPage() {
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [user, setUser] = useState<string | null>(null);
-
-  useEffect(() => {
-
-  const storedUser = localStorage.getItem("user");
-  setUser(storedUser);
-
-  setTournaments([
-    {
-      id: "1",
-      title: "Tamil Nadu State Championship",
-      location: "Chennai",
-      startDate: "2026-07-10",
-      endDate: "2026-07-12",
-    },
-    {
-      id: "2",
-      title: "Coimbatore Open",
-      location: "Coimbatore",
-      startDate: "2026-08-02",
-      endDate: "2026-08-04",
-    },
-    {
-      id: "3",
-      title: "Madurai District League",
-      location: "Madurai",
-      startDate: "2026-09-01",
-      endDate: "2026-09-03",
-    },
-  ]);
-
-}, []);
-
-  const fetchTournaments = async () => {
-    const res = await fetch("/api/tournaments");
-    const data = await res.json();
-    setTournaments(data);
-  };
-
-  const fetchApplications = async () => {
-    const res = await fetch("/api/applications");
-    const data = await res.json();
-    setApplications(data);
-  };
-
-  const hasApplied = (tournamentId: string) => {
-    if (!user) return false;
-
-    return applications.some(
-      (app) =>
-        app.tournamentId === tournamentId &&
-        app.playerName === user
-    );
-  };
+  const statusFilters = [
+    { label: "All", value: "ALL" },
+    { label: "Upcoming", value: "UPCOMING" },
+    { label: "Open", value: "OPEN" },
+    { label: "Completed", value: "COMPLETED" },
+  ]
 
   return (
-    <div className="min-h-screen p-20">
-      <h1 className="text-3xl font-bold mb-10">All Tournaments</h1>
+    <div className="bg-[#FAFAFA] min-h-screen">
+      {/* Header */}
+      <div className="bg-[#0A0A0A] text-white py-20 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 bg-[url('/hero-table-tennis.jpg')] bg-cover bg-center" />
+        <div className="container mx-auto px-4 lg:px-8 relative z-10">
+          <h1 className="text-6xl font-bebas tracking-wider mb-4 animate-fadeIn">Tournaments</h1>
+          <p className="text-xl text-gray-400 font-dm-sans max-w-2xl">
+            State, District & Open Championships. Compete with the best players in Tamil Nadu.
+          </p>
+        </div>
+      </div>
 
-      <div className="space-y-6">
-        {tournaments.length === 0 ? (
-          <p>No tournaments available.</p>
+      {/* Filters */}
+      <div className="container mx-auto px-4 lg:px-8 -mt-8 relative z-20">
+        <div className="bg-white rounded-2xl shadow-xl p-4 flex flex-col md:flex-row items-center justify-between gap-6 border border-gray-100">
+          <div className="flex gap-2 p-1 bg-gray-50 rounded-xl w-full md:w-auto">
+            {statusFilters.map((filter) => (
+              <Link
+                key={filter.value}
+                href={`/tournaments?status=${filter.value}`}
+                className={`flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-bold transition-all ${
+                  currentStatus === filter.value 
+                  ? "bg-[#E85D04] text-white shadow-md" 
+                  : "text-gray-500 hover:text-gray-900"
+                }`}
+              >
+                {filter.label}
+              </Link>
+            ))}
+          </div>
+
+          <div className="relative w-full md:w-72">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search tournaments..." 
+              className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E85D04]/20"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* List */}
+      <div className="container mx-auto px-4 lg:px-8 py-16">
+        {tournaments.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {tournaments.map((t: any) => (
+              <Link 
+                key={t.id}
+                href={`/tournaments/${t.slug}`}
+                className="group bg-white rounded-2xl border border-gray-100 overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+              >
+                <div className="relative h-56 w-full">
+                  <Image 
+                    src={t.posterUrl || "/tournament1.jpg"} 
+                    alt={t.title} 
+                    fill 
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                  <div className="absolute top-4 right-4">
+                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest shadow-lg ${
+                      t.status === "OPEN" ? "bg-[#2D6A4F] text-white" :
+                      t.status === "UPCOMING" ? "bg-[#E85D04] text-white" :
+                      t.status === "COMPLETED" ? "bg-[#0077B6] text-white" :
+                      "bg-gray-500 text-white"
+                    }`}>
+                      {t.status}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="p-8">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-[#E85D04] transition-colors line-clamp-2">
+                    {t.title}
+                  </h3>
+
+                  <div className="space-y-3 mb-8">
+                    <div className="flex items-center gap-3 text-gray-500">
+                      <Calendar size={18} className="text-[#E85D04]" />
+                      <span className="text-sm font-medium">
+                        {format(new Date(t.startDate), "MMM dd")} - {format(new Date(t.endDate), "MMM dd, yyyy")}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-gray-500">
+                      <MapPin size={18} className="text-[#E85D04]" />
+                      <span className="text-sm font-medium line-clamp-1">{t.venue}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-6 border-t border-gray-50">
+                    <div className="flex items-center gap-2 text-gray-400">
+                      <Users size={16} />
+                      <span className="text-xs font-bold">{t._count.applications} Registered</span>
+                    </div>
+                    <span className="text-[#E85D04] font-bold flex items-center gap-1 group-hover:gap-2 transition-all">
+                      View Details <ChevronRight size={16} />
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
         ) : (
-          tournaments.map((t) => (
-            <div
-              key={t.id}
-              className="border p-6 rounded-lg flex justify-between items-center"
-            >
-              <div>
-                <h2 className="text-xl font-semibold">{t.title}</h2>
-                <p className="text-gray-600">{t.location}</p>
-                <p className="text-gray-500">
-                  {t.startDate} to {t.endDate}
-                </p>
-              </div>
-
-              {hasApplied(t.id) ? (
-                <span className="px-5 py-2 bg-green-600 text-white rounded">
-                  Applied
-                </span>
-              ) : (
-                <Link
-                  href={`/tournaments/${t.id}`}
-                  className="bg-blue-600 text-white px-5 py-2 rounded"
-                >
-                  View
-                </Link>
-              )}
-            </div>
-          ))
+          <div className="text-center py-32 bg-white rounded-3xl border border-dashed border-gray-300">
+            <Trophy size={64} className="mx-auto text-gray-200 mb-6" />
+            <h3 className="text-2xl font-bebas tracking-wide text-gray-400">No tournaments found</h3>
+            <p className="text-gray-500 mt-2">Try adjusting your filters or search query.</p>
+          </div>
         )}
       </div>
     </div>
-  );
+  )
 }

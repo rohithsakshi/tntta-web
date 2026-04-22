@@ -1,144 +1,80 @@
-import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { NextResponse } from "next/server"
+import prisma from "@/lib/prisma"
+import { auth } from "@/lib/auth"
+import { tournamentApplicationSchema } from "@/lib/validations"
+import { PaymentStatus } from "@prisma/client"
 
-const dataDir = path.join(process.cwd(), "data");
-const filePath = path.join(dataDir, "applications.json");
-
-/* =========================
-   File Utilities
-========================= */
-
-function ensureFileExists() {
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir);
+export async function GET(req: Request) {
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
   }
 
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, "[]");
-  }
-}
+  const { searchParams } = new URL(req.url)
+  const tournamentId = searchParams.get("tournamentId")
 
-function readData() {
-  ensureFileExists();
-  const file = fs.readFileSync(filePath, "utf8");
   try {
-    return JSON.parse(file);
-  } catch {
-    return [];
-  }
-}
+    const applications = await prisma.tournamentApplication.findMany({
+      where: {
+        AND: [
+          session.user.role === "ADMIN" ? {} : { playerId: session.user.id },
+          tournamentId ? { tournamentId } : {}
+        ]
+      },
+      include: {
+        tournament: true,
+        player: true
+      },
+      orderBy: { appliedAt: "desc" }
+    })
 
-function writeData(data: any) {
-  ensureFileExists();
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
-
-/* =========================
-   POST - Apply to Tournament
-========================= */
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-
-    const {
-      tournamentId,
-      playerName,
-      lastName,
-      gender,
-      dob,
-      district,
-      contact,
-      coach,
-      club,
-      category,
-      paymentStatus,
-      transactionId,
-    } = body;
-
-    /* ---------------------------
-       Required Fields Check
-    --------------------------- */
-    if (
-      !tournamentId ||
-      !playerName ||
-      !category ||
-      paymentStatus !== "PAID" ||
-      !transactionId
-    ) {
-      return NextResponse.json(
-        { error: "Payment required before application" },
-        { status: 400 }
-      );
-    }
-
-    const applications = readData();
-
-    /* ---------------------------
-       Prevent Duplicate Application
-    --------------------------- */
-    const alreadyApplied = applications.find(
-      (app: any) =>
-        app.tournamentId === tournamentId &&
-        app.playerName === playerName
-    );
-
-    if (alreadyApplied) {
-      return NextResponse.json(
-        { error: "You have already applied for this tournament" },
-        { status: 400 }
-      );
-    }
-
-    /* ---------------------------
-       Create Application
-    --------------------------- */
-    const newApplication = {
-      id: "APP_" + Date.now(),
-      tournamentId,
-      playerName,
-      lastName,
-      gender,
-      dob,
-      district,
-      contact,
-      coach,
-      club,
-      category,
-      paymentStatus,
-      transactionId,
-      appliedAt: new Date().toISOString(),
-    };
-
-    applications.push(newApplication);
-    writeData(applications);
-
-    return NextResponse.json(
-      { message: "Application successful", data: newApplication },
-      { status: 201 }
-    );
-
+    return NextResponse.json({ success: true, data: applications })
   } catch (error) {
-    return NextResponse.json(
-      { error: "Server error during application" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: "Failed to fetch applications" }, { status: 500 })
   }
 }
 
-/* =========================
-   GET - Fetch Applications
-========================= */
+export async function POST(req: Request) {
+  const session = await auth()
+  if (!session) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
+  }
 
-export async function GET() {
   try {
-    const applications = readData();
-    return NextResponse.json(applications, { status: 200 });
-  } catch {
-    return NextResponse.json(
-      { error: "Unable to fetch applications" },
-      { status: 500 }
-    );
+    const body = await req.json()
+    const validatedData = tournamentApplicationSchema.parse(body)
+
+    // Check if already registered
+    const existingApp = await prisma.tournamentApplication.findFirst({
+      where: {
+        tournamentId: validatedData.tournamentId,
+        playerId: session.user.id,
+        category: validatedData.category
+      }
+    })
+
+    if (existingApp) {
+      return NextResponse.json({ success: false, error: "You are already registered for this category" }, { status: 400 })
+    }
+
+    // Generate App ID
+    const year = new Date().getFullYear()
+    const count = await prisma.tournamentApplication.count()
+    const appId = `APP-${year}-${(count + 1).toString().padStart(4, "0")}`
+
+    const application = await prisma.tournamentApplication.create({
+      data: {
+        appId,
+        tournamentId: validatedData.tournamentId,
+        playerId: session.user.id,
+        category: validatedData.category,
+        amount: validatedData.amount,
+        paymentStatus: PaymentStatus.PENDING
+      }
+    })
+
+    return NextResponse.json({ success: true, data: application })
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 400 })
   }
 }

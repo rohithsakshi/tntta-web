@@ -21,10 +21,8 @@ export default function TournamentCard({
   const [applied, setApplied] = useState(false);
 
   useEffect(() => {
-    const user = localStorage.getItem("user");
-    if (!user) return;
- 
-  }, [tournament.id]);
+  setApplied(false);
+}, []); 
 
   return (
     <motion.div

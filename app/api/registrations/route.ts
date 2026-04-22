@@ -1,139 +1,63 @@
-import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
-import bcrypt from "bcryptjs";
+import { NextResponse } from "next/server"
+import prisma from "@/lib/prisma"
+import bcrypt from "bcryptjs"
+import { playerRegistrationSchema } from "@/lib/validations"
+import { UserRole } from "@prisma/client"
 
-const dataDir = path.join(process.cwd(), "data");
-const filePath = path.join(dataDir, "registrations.json");
-
-/* =========================
-   File Utilities
-========================= */
-
-function ensureFileExists() {
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir);
-  }
-
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, "[]");
-  }
-}
-
-function readData() {
-  ensureFileExists();
-  const file = fs.readFileSync(filePath, "utf8");
+export async function POST(req: Request) {
   try {
-    return JSON.parse(file);
-  } catch {
-    return [];
-  }
-}
+    const body = await req.json()
+    const validatedData = playerRegistrationSchema.parse(body)
 
-function writeData(data: any) {
-  ensureFileExists();
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
-
-/* =========================
-   POST - Create Player Registration
-========================= */
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-
-    const {
-      firstName,
-      lastName,
-      gender,
-      dob,
-      district,
-      contact,
-      club,
-      category,
-      password,
-    } = body;
-
-    // Basic validation
-    if (
-      !firstName ||
-      !lastName ||
-      !gender ||
-      !dob ||
-      !district ||
-      !contact ||
-      !club ||
-      !category ||
-      !password
-    ) {
-      return NextResponse.json(
-        { error: "All fields including password are required" },
-        { status: 400 }
-      );
-    }
-
-    const registrations = readData();
-
-    // Better duplicate check (contact should be unique)
-    const existingUser = registrations.find(
-      (user: any) =>
-        user.contact === contact
-    );
+    // Check if contact already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { contact: validatedData.contact }
+    })
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "User already exists with this contact number" },
+        { success: false, error: "A player with this contact number already exists" },
         { status: 400 }
-      );
+      )
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const passwordHash = await bcrypt.hash(validatedData.password, 10)
 
-    const newPlayer = {
-      id: "PLY_" + Date.now(),
-      firstName,
-      lastName,
-      gender,
-      dob,
-      district,
-      contact,
-      club,
-      category,
-      password: hashedPassword,
-      role: "player",
-      createdAt: new Date().toISOString(),
-    };
+    // Generate TNTTA ID (TNTTA-YYYY-XXXX)
+    const year = new Date().getFullYear()
+    const count = await prisma.user.count()
+    const tnttaId = `TNTTA-${year}-${(count + 1).toString().padStart(4, "0")}`
 
-    registrations.push(newPlayer);
-    writeData(registrations);
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        tnttaId,
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
+        email: validatedData.email || null,
+        contact: validatedData.contact,
+        passwordHash,
+        gender: validatedData.gender,
+        dob: validatedData.dob,
+        district: validatedData.district,
+        club: validatedData.club || null,
+        category: validatedData.category,
+        role: UserRole.PLAYER,
+      }
+    })
 
+    return NextResponse.json({ 
+      success: true, 
+      tnttaId: user.tnttaId, 
+      message: "Registration successful" 
+    })
+
+  } catch (error: any) {
+    console.error("Registration error:", error)
     return NextResponse.json(
-      { message: "Registration successful", playerId: newPlayer.id },
-      { status: 201 }
-    );
-
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Server error during registration" },
+      { success: false, error: error.message || "Internal server error" },
       { status: 500 }
-    );
-  }
-}
-
-/* =========================
-   GET - Fetch Registrations
-========================= */
-
-export async function GET() {
-  try {
-    const registrations = readData();
-    return NextResponse.json(registrations, { status: 200 });
-  } catch {
-    return NextResponse.json(
-      { error: "Unable to fetch registrations" },
-      { status: 500 }
-    );
+    )
   }
 }

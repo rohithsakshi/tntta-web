@@ -1,41 +1,61 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --tntta-orange: #E85D04;
+  --tntta-orange-dark: #C44D03;
+  --tntta-orange-light: #FF7F2A;
+  --tntta-dark: #0A0A0A;
+  --tntta-dark-2: #111111;
+  --tntta-dark-3: #1A1A1A;
+  --tntta-blue: #0077B6;
+  --tntta-blue-light: #0096C7;
+  --tntta-success: #2D6A4F;
+  --tntta-white: #FAFAFA;
+  --tntta-gray: #6B7280;
+  --tntta-border: #2A2A2A;
 }
 
- 
-
- @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-.animate-fadeIn {
-  animation: fadeIn 0.25s ease-out forwards;
+@theme {
+  --font-bebas: var(--font-bebas);
+  --font-dm-sans: var(--font-dm-sans);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-@keyframes scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+  @apply font-dm-sans bg-[#FAFAFA] text-[#0A0A0A] antialiased;
 }
 
-.animate-scroll {
-  animation: scroll 20s linear infinite;
+h1, h2, h3, .font-bebas {
+  @apply font-bebas;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Custom Utilities */
+.text-orange { color: var(--tntta-orange); }
+.bg-orange { background-color: var(--tntta-orange); }
+.border-orange { border-color: var(--tntta-orange); }
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--tntta-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--tntta-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--tntta-orange);
 }

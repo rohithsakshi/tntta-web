@@ -1,76 +1,90 @@
-"use client";
+import { Trophy, ChevronRight } from "lucide-react"
+import Link from "next/link"
+import prisma from "@/lib/prisma"
 
-import { motion } from "framer-motion";
+async function getRecentResults() {
+  return await prisma.matchResult.findMany({
+    orderBy: { playedAt: "desc" },
+    take: 5,
+    include: {
+      player1: true,
+      player2: true,
+      tournament: true,
+    },
+  })
+}
 
-const results = [
-  {
-    stage: "Final Match",
-    player1: "R. Kumar",
-    score: "3 - 1",
-    player2: "S. Mehta",
-    sets: "(11-6, 9-11, 11-7, 11-6)",
-  },
-  {
-    stage: "Semi-Final",
-    player1: "A. Singh",
-    score: "3 - 2",
-    player2: "V. Patel",
-    sets: "(11-6, 7-11, 12-10, 8-11, 11-9)",
-  },
-];
+export default async function Results() {
+  const results = await getRecentResults()
 
-export default function Results() {
   return (
-    <section className="px-20 py-20 bg-gray-50">
-      <motion.h2
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        viewport={{ once: true }}
-        className="text-3xl font-bold mb-12"
-      >
-        Latest Results
-      </motion.h2>
-
-      <div className="space-y-8">
-        {results.map((match, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: index * 0.2 }}
-            viewport={{ once: true }}
-            whileHover={{ y: -5 }}
-            className="bg-white rounded-xl shadow-md hover:shadow-xl transition-all duration-300 p-8 flex justify-between items-center"
+    <section className="py-24 bg-white">
+      <div className="container mx-auto px-4 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
+          <div>
+            <h2 className="text-5xl font-bebas tracking-wider text-[#0A0A0A] mb-2">Recent Results</h2>
+            <div className="w-24 h-1.5 bg-[#2D6A4F]" />
+          </div>
+          <Link 
+            href="/results" 
+            className="flex items-center gap-2 text-[#2D6A4F] font-bold hover:gap-3 transition-all"
           >
-            <div>
-              <p className="text-sm text-gray-500 mb-3">{match.stage}</p>
+            FULL TOURNAMENT RESULTS
+            <ChevronRight size={20} />
+          </Link>
+        </div>
 
-              <div className="flex items-center gap-6 text-lg font-semibold">
-                <span>{match.player1}</span>
-
-                <motion.span
-                  animate={{ scale: [1, 1.05, 1] }}
-                  transition={{
-                    duration: 1.5,
-                    repeat: Infinity,
-                    ease: "easeInOut",
-                  }}
-                  className="bg-blue-600 text-white px-5 py-2 rounded-lg shadow-md"
-                >
-                  {match.score}
-                </motion.span>
-
-                <span>{match.player2}</span>
-              </div>
-            </div>
-
-            <div className="text-gray-500 text-sm">
-              {match.sets}
-            </div>
-          </motion.div>
-        ))}
+        {results.length > 0 ? (
+          <div className="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-gray-50 text-gray-500 text-xs font-bold uppercase tracking-wider">
+                  <th className="px-6 py-4">Tournament</th>
+                  <th className="px-6 py-4">Matchup</th>
+                  <th className="px-6 py-4">Score</th>
+                  <th className="px-6 py-4 text-right">Round</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {results.map((match: any) => (
+                  <tr key={match.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <p className="font-bold text-sm text-gray-900 line-clamp-1">{match.tournament.title}</p>
+                      <p className="text-[10px] text-gray-400 uppercase font-bold">{match.category}</p>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-1">
+                        <div className={`text-sm flex items-center gap-2 ${match.winnerId === match.player1Id ? "font-bold text-[#2D6A4F]" : "text-gray-600"}`}>
+                          {match.player1.firstName} {match.player1.lastName}
+                          {match.winnerId === match.player1Id && <Trophy size={14} />}
+                        </div>
+                        <div className={`text-sm flex items-center gap-2 ${match.winnerId === match.player2Id ? "font-bold text-[#2D6A4F]" : "text-gray-600"}`}>
+                          {match.player2.firstName} {match.player2.lastName}
+                          {match.winnerId === match.player2Id && <Trophy size={14} />}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className="font-mono text-sm bg-gray-100 px-2 py-1 rounded text-gray-700">
+                        {match.score}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <span className="text-xs font-bold text-gray-400 uppercase tracking-widest bg-gray-100 px-3 py-1 rounded-full">
+                        {match.round}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-20 bg-gray-50 rounded-2xl">
+            <p className="text-gray-500">No recent match results available.</p>
+          </div>
+        )}
       </div>
     </section>
-  );
+  )
 }

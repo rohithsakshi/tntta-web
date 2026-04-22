@@ -1,64 +1,91 @@
-"use client";
-
-import { motion } from "framer-motion";
-import { CalendarDays, Trophy, BarChart3 } from "lucide-react";
+import { BarChart3, Users2, Trophy, ClipboardCheck } from "lucide-react"
+import Image from "next/image"
 
 const features = [
   {
-    icon: CalendarDays,
-    title: "Register for Events",
-    desc: "Sign up for upcoming tournaments easily.",
+    icon: <BarChart3 className="text-[#E85D04]" size={32} />,
+    title: "State Rankings",
+    description: "Track your progress with our official state-wide ranking system updated after every tournament."
   },
   {
-    icon: Trophy,
-    title: "Track Live Scores",
-    desc: "Follow matches in real-time.",
+    icon: <ClipboardCheck className="text-[#E85D04]" size={32} />,
+    title: "Tournament Management",
+    description: "Seamless registration and entry fee payments for all district and state level championships."
   },
   {
-    icon: BarChart3,
-    title: "Check Player Rankings",
-    desc: "See where you stand!",
+    icon: <Users2 className="text-[#E85D04]" size={32} />,
+    title: "Player Profiles",
+    description: "Build your legacy with a comprehensive career history, match statistics, and achievement tracking."
   },
-];
+  {
+    icon: <Trophy className="text-[#E85D04]" size={32} />,
+    title: "Live Results",
+    description: "Stay updated with real-time match scores and draws from ongoing tournaments across Tamil Nadu."
+  }
+]
 
 export default function Features() {
   return (
-    <section className="py-20 bg-white">
-      <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-3 gap-12 text-center">
+    <section className="py-24 bg-[#0A0A0A] relative overflow-hidden">
+      {/* Grid Pattern Background */}
+      <div className="absolute inset-0 opacity-5" style={{ backgroundImage: "radial-gradient(#E85D04 0.5px, transparent 0.5px)", backgroundSize: "24px 24px" }} />
+      
+      <div className="container mx-auto px-4 lg:px-8 relative z-10">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bebas tracking-wider text-white mb-4 uppercase">Official TNTTA Platform</h2>
+          <p className="text-gray-400 max-w-2xl mx-auto font-dm-sans text-sm sm:text-base px-4">
+            Elevating the standard of Table Tennis in Tamil Nadu through technology and transparency.
+          </p>
+        </div>
 
-        {features.map((feature, index) => {
-          const Icon = feature.icon;
-
-          return (
-            <motion.div
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          {[
+            {
+              ...features[0],
+              bg: "https://images.unsplash.com/photo-1544X0TzmHY?w=600&h=400&q=80&auto=format&fit=crop"
+            },
+            {
+              ...features[1],
+              bg: "https://images.unsplash.com/photo-1511067007398-7e4b90cfa4bc?w=600&h=400&q=80&auto=format&fit=crop"
+            },
+            {
+              ...features[2],
+              bg: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&q=80&auto=format&fit=crop"
+            },
+            {
+              ...features[3],
+              bg: "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=600&h=400&q=80&auto=format&fit=crop"
+            }
+          ].map((feature, index) => (
+            <div 
               key={index}
-              initial={{ opacity: 0, y: 40 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.2 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -8 }}
-              className="group bg-gray-50 rounded-xl p-10 shadow-md hover:shadow-xl transition-all duration-300"
+              className="relative p-8 bg-[#111111] border border-white/5 rounded-2xl hover:border-[#E85D04]/30 hover:bg-[#151515] transition-all group overflow-hidden"
             >
-              {/* Icon Circle */}
-              <motion.div
-                whileHover={{ rotate: 5, scale: 1.05 }}
-                className="mx-auto mb-6 w-20 h-20 flex items-center justify-center rounded-full bg-blue-100 group-hover:bg-blue-600 transition-colors duration-300"
-              >
-                <Icon className="w-8 h-8 text-blue-600 group-hover:text-white transition-colors duration-300" />
-              </motion.div>
+              {/* Background Image Layer */}
+              <div className="absolute inset-0 z-0">
+                <Image
+                  src={feature.bg}
+                  alt=""
+                  fill
+                  className="object-cover opacity-10 group-hover:opacity-20 transition-opacity duration-500"
+                  unoptimized
+                />
+                <div className="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] via-transparent to-transparent" />
+              </div>
 
-              <h3 className="text-xl font-semibold mb-3">
-                {feature.title}
-              </h3>
-
-              <p className="text-gray-600">
-                {feature.desc}
-              </p>
-            </motion.div>
-          );
-        })}
-
+              <div className="relative z-10">
+                <div className="mb-6 p-3 bg-white/5 rounded-xl inline-block group-hover:scale-110 transition-transform">
+                  {feature.icon}
+                </div>
+                <h3 className="text-2xl font-bebas tracking-wide text-white mb-3">{feature.title}</h3>
+                <p className="text-gray-400 text-sm leading-relaxed font-dm-sans">
+                  {feature.description}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
-  );
+  )
 }

@@ -1,89 +1,52 @@
-import { NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { NextResponse } from "next/server"
+import prisma from "@/lib/prisma"
+import { auth } from "@/lib/auth"
+import { UserRole } from "@prisma/client"
+import { tournamentSchema } from "@/lib/validations"
 
-const dataDir = path.join(process.cwd(), "data");
-const filePath = path.join(dataDir, "tournaments.json");
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url)
+  const status = searchParams.get("status")
+  const limit = searchParams.get("limit")
 
-function ensureFileExists() {
-  if (!fs.existsSync(dataDir)) {
-    fs.mkdirSync(dataDir);
-  }
-
-  if (!fs.existsSync(filePath)) {
-    fs.writeFileSync(filePath, "[]");
-  }
-}
-
-function readData() {
-  ensureFileExists();
-  const file = fs.readFileSync(filePath, "utf8");
   try {
-    return JSON.parse(file);
-  } catch {
-    return [];
-  }
-}
+    const tournaments = await prisma.tournament.findMany({
+      where: status ? { status: status as any } : {},
+      take: limit ? parseInt(limit) : undefined,
+      orderBy: { startDate: "asc" },
+    })
 
-function writeData(data: any) {
-  ensureFileExists();
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
-
-/* =========================
-   POST - Create Tournament
-========================= */
-
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const { title, location, startDate, endDate } = body;
-
-    if (!title || !location || !startDate || !endDate) {
-      return NextResponse.json(
-        { error: "All tournament fields are required" },
-        { status: 400 }
-      );
-    }
-
-    const tournaments = readData();
-
-    const newTournament = {
-      id: Date.now().toString(),
-      title,
-      location,
-      startDate,
-      endDate,
-      createdAt: new Date().toISOString(),
-    };
-
-    tournaments.push(newTournament);
-    writeData(tournaments);
-
-    return NextResponse.json(
-      { message: "Tournament created successfully", data: newTournament },
-      { status: 201 }
-    );
+    return NextResponse.json({ success: true, data: tournaments })
   } catch (error) {
-    return NextResponse.json(
-      { error: "Server error creating tournament" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: "Failed to fetch tournaments" }, { status: 500 })
   }
 }
 
-/* =========================
-   GET - Fetch Tournaments
-========================= */
+export async function POST(req: Request) {
+  const session = await auth()
+  if (!session || session.user.role !== UserRole.ADMIN) {
+    return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
+  }
 
-export async function GET() {
   try {
-    const tournaments = readData();
-    return NextResponse.json(tournaments, { status: 200 });
-  } catch {
-    return NextResponse.json(
-      { error: "Unable to fetch tournaments" },
-      { status: 500 }
-    );
+    const body = await req.json()
+    const validatedData = tournamentSchema.parse(body)
+    
+    const slug = validatedData.title
+      .toLowerCase()
+      .replace(/ /g, "-")
+      .replace(/[^\w-]+/g, "")
+
+    const tournament = await prisma.tournament.create({
+      data: {
+        ...validatedData,
+        slug,
+        createdById: session.user.id,
+      }
+    })
+
+    return NextResponse.json({ success: true, data: tournament })
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 400 })
   }
 }

@@ -1,0 +1,178 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  PLAYER
+  ADMIN
+  DISTRICT_SECRETARY
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum Category {
+  MINI_CADET
+  CADET
+  SUB_JUNIOR
+  JUNIOR
+  SENIOR
+  MENS
+  VETERANS
+}
+
+enum TournamentStatus {
+  DRAFT
+  UPCOMING
+  OPEN
+  CLOSED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum TournamentType {
+  STATE_RANKING
+  DISTRICT_RANKING
+  STATE_CHAMPIONSHIP
+  INVITATIONAL
+  OPEN_TOURNAMENT
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model User {
+  id            String    @id @default(cuid())
+  tnttaId       String    @unique // TNTTA-YYYY-XXXX
+  firstName     String
+  lastName      String
+  email         String?   @unique
+  contact       String    @unique
+  passwordHash  String
+  gender        Gender
+  dob           DateTime
+  district      String
+  club          String?
+  category      Category
+  role          UserRole  @default(PLAYER)
+  profilePhoto  String?
+  rankingPoints Int       @default(0)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  tournamentsCreated    Tournament[]
+  applications          TournamentApplication[]
+  rankingEntries        RankingEntry[]
+  matchesAsPlayer1      MatchResult[]           @relation("Player1")
+  matchesAsPlayer2      MatchResult[]           @relation("Player2")
+  matchesWon            MatchResult[]           @relation("Winner")
+  galleryImagesUploaded GalleryImage[]
+  newsItems             NewsItem[]
+}
+
+model Tournament {
+  id                   String           @id @default(cuid())
+  title                String
+  slug                 String           @unique
+  type                 TournamentType   @default(STATE_RANKING)
+  description          String           @db.Text
+  location             String
+  venue                String
+  startDate            DateTime
+  endDate              DateTime
+  registrationOpens    DateTime
+  registrationDeadline DateTime
+  entryFee             Int              // In paise (e.g., 50000 = ₹500)
+  maxParticipants      Int?
+  categories           String[]         // List of eligible categories as strings
+  status               TournamentStatus @default(UPCOMING)
+  posterUrl            String?
+  
+  createdById          String
+  createdBy            User             @relation(fields: [createdById], references: [id])
+  
+  applications         TournamentApplication[]
+  matches              MatchResult[]
+  galleryImages        GalleryImage[]
+  
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+}
+
+model TournamentApplication {
+  id            String        @id @default(cuid())
+  appId         String        @unique // APP-YYYY-XXXX
+  tournamentId  String
+  tournament    Tournament    @relation(fields: [tournamentId], references: [id])
+  playerId      String
+  player        User          @relation(fields: [playerId], references: [id])
+  category      String
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentId     String?       // Razorpay payment ID
+  orderId       String?       // Razorpay order ID
+  amount        Int           // In paise
+  appliedAt     DateTime      @default(now())
+  confirmedAt   DateTime?
+}
+
+model RankingEntry {
+  id        String   @id @default(cuid())
+  playerId  String
+  player    User     @relation(fields: [playerId], references: [id])
+  category  String
+  points    Int
+  rank      Int
+  season    String   // e.g., "2025-26"
+  updatedAt DateTime @updatedAt
+}
+
+model MatchResult {
+  id           String     @id @default(cuid())
+  tournamentId String
+  tournament   Tournament @relation(fields: [tournamentId], references: [id])
+  player1Id    String
+  player1      User       @relation("Player1", fields: [player1Id], references: [id])
+  player2Id    String
+  player2      User       @relation("Player2", fields: [player2Id], references: [id])
+  score        String     // e.g., "11-8, 9-11, 11-6, 11-7"
+  winnerId     String
+  winner       User       @relation("Winner", fields: [winnerId], references: [id])
+  round        String     // e.g., "Quarterfinal", "Final"
+  category     String
+  playedAt     DateTime   @default(now())
+}
+
+model GalleryImage {
+  id           String      @id @default(cuid())
+  url          String
+  caption      String?
+  tournamentId String?
+  tournament   Tournament? @relation(fields: [tournamentId], references: [id])
+  uploadedById String
+  uploadedBy   User        @relation(fields: [uploadedById], references: [id])
+  createdAt    DateTime    @default(now())
+}
+
+model NewsItem {
+  id          String   @id @default(cuid())
+  title       String
+  excerpt     String
+  content     String   @db.Text
+  imageUrl    String?
+  publishedAt DateTime @default(now())
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id])
+  isPublished Boolean  @default(false)
+}
