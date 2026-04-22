@@ -150,7 +150,7 @@ export default async function AdminPlayersPage() {
         />
         <StatsCard 
           title="Avg. Points"
-          value={Math.round(players.reduce((acc, curr) => acc + (curr.rankingPoints || 0), 0) / (players.length || 1))}
+          value={Math.round(players.reduce((acc: number, curr: any) => acc + (curr.rankingPoints || 0), 0) / (players.length || 1))}
           icon={Trophy}
           color="green"
         />

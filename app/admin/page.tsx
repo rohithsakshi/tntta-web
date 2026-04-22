@@ -189,7 +189,7 @@ export default async function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {data.recentTournaments.map((tourn) => (
+                  {data.recentTournaments.map((tourn: any) => (
                     <tr key={tourn.id} className="group hover:bg-gray-50 transition-all">
                       <td className="py-5 font-bold text-gray-900 text-sm">{tourn.title}</td>
                       <td className="py-5"><StatusBadge status={tourn.status} type="tournament" /></td>
@@ -243,7 +243,7 @@ export default async function AdminDashboard() {
               Deadlines
             </h3>
             <div className="space-y-6">
-              {data.upcomingDeadlines.map((tourn) => (
+              {data.upcomingDeadlines.map((tourn: any) => (
                 <div key={tourn.id} className="border-l-4 border-red-500 pl-4 py-1">
                   <p className="text-sm font-bold text-gray-900 leading-tight mb-1">{tourn.title}</p>
                   <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest">

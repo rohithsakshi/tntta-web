@@ -43,7 +43,7 @@ export default async function AdminGalleryPage() {
 
       {/* Grid of Images */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {images.map((img) => (
+        {images.map((img: any) => (
           <div key={img.id} className="bg-white rounded-[32px] overflow-hidden border border-gray-100 shadow-sm group hover:shadow-xl transition-all">
              <div className="aspect-square relative overflow-hidden">
                 <img 

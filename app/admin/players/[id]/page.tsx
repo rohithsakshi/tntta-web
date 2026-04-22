@@ -168,7 +168,7 @@ export default async function PlayerDetailPage({ params }: { params: Promise<{ i
                 Tournament Participation
              </h3>
              <div className="space-y-4">
-                {player.applications.map((app) => (
+                {player.applications.map((app: any) => (
                   <div key={app.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-3xl border border-gray-100 group hover:border-[#E85D04]/30 transition-all">
                     <div className="flex items-center gap-6">
                       <div className="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[#E85D04] font-bebas text-xl">
