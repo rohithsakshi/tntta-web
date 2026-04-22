@@ -2,15 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { Calendar, MapPin, ChevronRight, Trophy } from "lucide-react"
 import { format } from "date-fns"
-import prisma from "@/lib/prisma"
-
-async function getUpcomingTournaments() {
-  return await prisma.tournament.findMany({
-    where: { status: "OPEN" },
-    orderBy: { startDate: "asc" },
-    take: 3,
-  })
-}
+import { getUpcomingTournaments } from "@/lib/data"
 
 export default async function Tournaments() {
   const tournaments = await getUpcomingTournaments()

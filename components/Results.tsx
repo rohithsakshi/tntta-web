@@ -1,18 +1,6 @@
 import { Trophy, ChevronRight } from "lucide-react"
 import Link from "next/link"
-import prisma from "@/lib/prisma"
-
-async function getRecentResults() {
-  return await prisma.matchResult.findMany({
-    orderBy: { playedAt: "desc" },
-    take: 5,
-    include: {
-      player1: true,
-      player2: true,
-      tournament: true,
-    },
-  })
-}
+import { getRecentResults } from "@/lib/data"
 
 export default async function Results() {
   const results = await getRecentResults()

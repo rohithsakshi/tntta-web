@@ -2,15 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Calendar, ArrowRight } from "lucide-react"
 import { format } from "date-fns"
-import prisma from "@/lib/prisma"
-
-async function getLatestNews() {
-  return await prisma.newsItem.findMany({
-    where: { isPublished: true },
-    orderBy: { publishedAt: "desc" },
-    take: 2,
-  })
-}
+import { getLatestNews } from "@/lib/data"
 
 export default async function News() {
   const news = await getLatestNews()
