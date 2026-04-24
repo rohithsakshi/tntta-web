@@ -6,15 +6,15 @@ import { motion, AnimatePresence } from "framer-motion"
 import { X, Maximize2, Filter, Upload, Camera } from "lucide-react"
 
 const images = [
-  { id: 1, url: "https://images.unsplash.com/photo-1593481878345-0d2685790c6b?w=800&h=600&q=85&auto=format&fit=crop", caption: "Professional Action Shot", category: "Tournament" },
-  { id: 2, url: "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=600&h=800&q=85&auto=format&fit=crop", caption: "High Intensity Rally", category: "Tournament" },
-  { id: 3, url: "https://images.unsplash.com/photo-1619619163276-805161044733?w=600&h=800&q=85&auto=format&fit=crop", caption: "Competition Focus", category: "Tournament" },
-  { id: 4, url: "https://media.istockphoto.com/id/1425158165/photo/table-tennis-ping-pong-paddles-and-white-ball-on-blue-board.jpg?s=612x612&w=is&k=20&c=q7kPR8BzNCOngSWY5t-VHNYfTK3_iQq4klx22sNAvS8=", caption: "Professional Equipment", category: "Training" },
-  { id: 5, url: "https://media.istockphoto.com/id/178826162/photo/service-on-table-tennis.jpg?s=612x612&w=is&k=20&c=wN1HhMjrniuoHWhYs2BAobaIGUN_N6qJPjhnq9td1Tc=", caption: "Precision Serve", category: "Training" },
-  { id: 6, url: "https://images.unsplash.com/photo-1544X0TzmHY?w=800&h=600&q=85&auto=format&fit=crop", caption: "Marcus Clark Competition", category: "Tournament" },
-  { id: 7, url: "https://images.unsplash.com/photo-1578262825743-a4e402caab76?w=600&h=600&q=85&auto=format&fit=crop", caption: "Championship Trophy", category: "Winners" },
-  { id: 8, url: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&h=600&q=85&auto=format&fit=crop", caption: "Athletic Team Celebration", category: "Winners" },
-  { id: 9, url: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=600&h=800&q=85&auto=format&fit=crop", caption: "Victory Moment", category: "Winners" },
+  { id: 1, url: "/image1.jpg", caption: "Professional Action Shot", category: "Tournament" },
+  { id: 2, url: "/image2.jpg", caption: "High Intensity Rally", category: "Tournament" },
+  { id: 3, url: "/image3.jpg", caption: "Competition Focus", category: "Tournament" },
+  { id: 4, url: "/image1.jpg", caption: "Professional Equipment", category: "Training" },
+  { id: 5, url: "/image2.jpg", caption: "Precision Serve", category: "Training" },
+  { id: 6, url: "/image3.jpg", caption: "Marcus Clark Competition", category: "Tournament" },
+  { id: 7, url: "/image1.jpg", caption: "Championship Trophy", category: "Winners" },
+  { id: 8, url: "/image2.jpg", caption: "Athletic Team Celebration", category: "Winners" },
+  { id: 9, url: "/image3.jpg", caption: "Victory Moment", category: "Winners" },
 ]
 
 const categories = ["All", "Tournament", "Training", "Winners", "Events"]

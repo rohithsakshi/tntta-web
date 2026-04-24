@@ -36,9 +36,9 @@ export default async function Tournaments() {
                 <div className="relative h-48 w-full overflow-hidden">
                   <Image
                     src={[
-                      "https://media.istockphoto.com/id/1417521713/photo/man-serving-ping-pong-ball.jpg?s=612x612&w=is&k=20&c=4nL90j90qH4sw_UxO_Np3FUcdcbNEZR7l5JVKcIfi9g=",
-                      "https://media.istockphoto.com/id/2211886201/photo/table-tennis-serve-close-up-view-of-woman-playing-ping-pong-table-tennis-ball-and-bat-in-hands.jpg?s=612x612&w=is&k=20&c=DaCIsG0NiGmZ3ryvld27iKU8HUoXrfWNEhsOiew3tDQ=",
-                      "https://images.unsplash.com/photo-1544X0TzmHY?w=800&h=450&q=85&auto=format&fit=crop"
+                      "/image1.jpg",
+                      "/image2.jpg",
+                      "/image3.jpg"
                     ][tournament.id.length % 3]} 
                     alt={tournament.title}
                     fill

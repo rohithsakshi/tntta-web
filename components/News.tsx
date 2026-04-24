@@ -34,8 +34,8 @@ export default async function News() {
               <div className="relative w-full sm:w-64 h-64 sm:h-auto overflow-hidden shrink-0">
                 <Image 
                   src={item.imageUrl || [
-                    "https://media.istockphoto.com/id/1425158165/photo/table-tennis-ping-pong-paddles-and-white-ball-on-blue-board.jpg?s=612x612&w=is&k=20&c=q7kPR8BzNCOngSWY5t-VHNYfTK3_iQq4klx22sNAvS8=",
-                    "https://media.istockphoto.com/id/178826162/photo/service-on-table-tennis.jpg?s=612x612&w=is&k=20&c=wN1HhMjrniuoHWhYs2BAobaIGUN_N6qJPjhnq9td1Tc="
+                    "/image1.jpg",
+                    "/image2.jpg"
                   ][item.id.length % 2]} 
                   alt={item.title} 
                   fill 

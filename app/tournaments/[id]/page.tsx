@@ -65,9 +65,9 @@ export default async function TournamentDetailPage({ params }: { params: Promise
       <div className="relative h-[400px] w-full overflow-hidden">
         <Image 
           src={tournament.posterUrl || [
-            "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=1600&h=900&q=90&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1509666537727-9154b6962292?w=1600&h=900&q=90&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1511067007398-7e4b90cfa4bc?w=1600&h=900&q=90&auto=format&fit=crop"
+            "/image1.jpg",
+            "/image2.jpg",
+            "/image3.jpg"
           ][tournament.id.length % 3]} 
           alt={tournament.title} 
           fill 

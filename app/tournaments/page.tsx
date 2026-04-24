@@ -95,7 +95,7 @@ export default async function TournamentsPage({
               >
                 <div className="relative h-56 w-full">
                   <Image 
-                    src={t.posterUrl || "/tournament1.jpg"} 
+                    src={t.posterUrl || "/image1.jpg"} 
                     alt={t.title} 
                     fill 
                     className="object-cover group-hover:scale-105 transition-transform duration-500"

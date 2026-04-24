@@ -48,7 +48,7 @@ export default async function RankingsPage({
     <div className="bg-[#FAFAFA] min-h-screen">
       {/* Header */}
       <div className="bg-[#0A0A0A] text-white py-20 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-20 bg-[url('https://images.unsplash.com/photo-1544X0TzmHY?w=1600&h=500&q=85&auto=format&fit=crop')] bg-cover bg-center" />
+        <div className="absolute inset-0 opacity-20 bg-[url('/image1.jpg')] bg-cover bg-center" />
         <div className="container mx-auto px-4 lg:px-8 relative z-10">
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-bebas tracking-wider mb-4 uppercase">Player Rankings</h1>
           <p className="text-lg sm:text-xl text-gray-400 font-dm-sans max-w-2xl">

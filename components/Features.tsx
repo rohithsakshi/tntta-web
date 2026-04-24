@@ -42,19 +42,19 @@ export default function Features() {
           {[
             {
               ...features[0],
-              bg: "https://images.unsplash.com/photo-1544X0TzmHY?w=600&h=400&q=80&auto=format&fit=crop"
+              bg: "/image1.jpg"
             },
             {
               ...features[1],
-              bg: "https://images.unsplash.com/photo-1511067007398-7e4b90cfa4bc?w=600&h=400&q=80&auto=format&fit=crop"
+              bg: "/image2.jpg"
             },
             {
               ...features[2],
-              bg: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=600&h=400&q=80&auto=format&fit=crop"
+              bg: "/image3.jpg"
             },
             {
               ...features[3],
-              bg: "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=600&h=400&q=80&auto=format&fit=crop"
+              bg: "/image1.jpg"
             }
           ].map((feature, index) => (
             <div 
