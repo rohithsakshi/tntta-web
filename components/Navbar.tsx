@@ -49,13 +49,13 @@ export default function Navbar() {
     >
       <div className="container mx-auto px-4 lg:px-8 flex items-center justify-between">
         {/* Logo */}
-        <Link href="/" className="flex items-center">
+        <Link href="/" className="flex items-center shrink-0">
           <Image 
             src="/TNTTA_logo.png" 
             alt="TNTTA Logo" 
-            width={120} 
-            height={48} 
-            className="object-contain h-12 w-auto"
+            width={100} 
+            height={40} 
+            className="object-contain h-10 sm:h-12 w-auto"
           />
         </Link>
 
@@ -134,7 +134,7 @@ export default function Navbar() {
 
         {/* Mobile Menu Toggle */}
         <button 
-          className="lg:hidden text-white"
+          className="lg:hidden text-white p-2 -mr-2"
           onClick={() => setIsMobileMenuOpen(true)}
         >
           <Menu size={28} />
@@ -149,11 +149,11 @@ export default function Navbar() {
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed inset-0 z-[60] bg-[#0A0A0A] flex flex-col p-8 lg:hidden"
+            className="fixed inset-0 z-[60] bg-[#0A0A0A] flex flex-col p-6 sm:p-8 lg:hidden"
           >
-            <div className="flex items-center justify-between mb-12">
-              <Image src="/TNTTA_logo.png" alt="TNTTA Logo" width={100} height={40} className="h-10 w-auto" />
-              <button onClick={() => setIsMobileMenuOpen(false)} className="text-white">
+            <div className="flex items-center justify-between mb-8 sm:mb-12">
+              <Image src="/TNTTA_logo.png" alt="TNTTA Logo" width={90} height={36} className="h-9 w-auto" />
+              <button onClick={() => setIsMobileMenuOpen(false)} className="text-white p-2 -mr-2">
                 <X size={32} />
               </button>
             </div>

@@ -103,11 +103,11 @@ export default async function RankingsPage({
             <table className="w-full text-left">
               <thead>
                 <tr className="bg-gray-50 text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em] border-b border-gray-100">
-                  <th className="px-8 py-6 text-center">Rank</th>
-                  <th className="px-8 py-6">Player Details</th>
-                  <th className="px-8 py-6">District / Club</th>
-                  <th className="px-8 py-6 text-right">Points</th>
-                  <th className="px-8 py-6 text-center">Trend</th>
+                  <th className="px-4 sm:px-8 py-6 text-center">Rank</th>
+                  <th className="px-4 sm:px-8 py-6">Player Details</th>
+                  <th className="px-8 py-6 hidden md:table-cell">District / Club</th>
+                  <th className="px-4 sm:px-8 py-6 text-right">Points</th>
+                  <th className="px-8 py-6 text-center hidden sm:table-cell">Trend</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
@@ -116,23 +116,23 @@ export default async function RankingsPage({
                     const rank = index + 1
                     return (
                       <tr key={player.id} className="hover:bg-gray-50/50 transition-colors group">
-                        <td className="px-8 py-6 text-center">
+                        <td className="px-4 sm:px-8 py-6 text-center">
                           {rank === 1 && (
-                            <div className="w-10 h-10 bg-yellow-400 text-white rounded-full flex items-center justify-center mx-auto font-bebas text-xl shadow-lg shadow-yellow-400/30">1</div>
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-yellow-400 text-white rounded-full flex items-center justify-center mx-auto font-bebas text-lg sm:text-xl shadow-lg shadow-yellow-400/30">1</div>
                           )}
                           {rank === 2 && (
-                            <div className="w-10 h-10 bg-gray-300 text-white rounded-full flex items-center justify-center mx-auto font-bebas text-xl shadow-lg shadow-gray-300/30">2</div>
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gray-300 text-white rounded-full flex items-center justify-center mx-auto font-bebas text-lg sm:text-xl shadow-lg shadow-gray-300/30">2</div>
                           )}
                           {rank === 3 && (
-                            <div className="w-10 h-10 bg-orange-300 text-white rounded-full flex items-center justify-center mx-auto font-bebas text-xl shadow-lg shadow-orange-300/30">3</div>
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-300 text-white rounded-full flex items-center justify-center mx-auto font-bebas text-lg sm:text-xl shadow-lg shadow-orange-300/30">3</div>
                           )}
                           {rank > 3 && (
-                            <span className="text-lg font-bebas text-gray-400">{rank}</span>
+                            <span className="text-base sm:text-lg font-bebas text-gray-400">{rank}</span>
                           )}
                         </td>
-                        <td className="px-8 py-6">
-                          <div className="flex items-center gap-4">
-                            <div className="relative w-10 h-10 rounded-full overflow-hidden shrink-0 border border-gray-100">
+                        <td className="px-4 sm:px-8 py-6">
+                          <div className="flex items-center gap-3 sm:gap-4">
+                            <div className="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden shrink-0 border border-gray-100">
                               <Image 
                                 src={`https://api.dicebear.com/7.x/initials/svg?seed=${player.firstName} ${player.lastName}&backgroundColor=0A0A0A&textColor=E85D04`}
                                 alt={player.firstName}
@@ -142,25 +142,25 @@ export default async function RankingsPage({
                               />
                             </div>
                             <div>
-                              <p className="font-bold text-gray-900 group-hover:text-[#E85D04] transition-colors">
+                              <p className="text-sm sm:text-base font-bold text-gray-900 group-hover:text-[#E85D04] transition-colors line-clamp-1">
                                 {player.firstName} {player.lastName}
                               </p>
-                              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                              <p className="text-[9px] sm:text-[10px] text-gray-400 font-bold uppercase tracking-widest">
                                 {player.tnttaId}
                               </p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-8 py-6">
+                        <td className="px-8 py-6 hidden md:table-cell">
                           <p className="text-sm font-medium text-gray-700">{player.district}</p>
                           <p className="text-xs text-gray-400">{player.club || "Unattached"}</p>
                         </td>
-                        <td className="px-8 py-6 text-right">
-                          <span className="text-xl font-bebas tracking-wide text-gray-900">
+                        <td className="px-4 sm:px-8 py-6 text-right">
+                          <span className="text-lg sm:text-xl font-bebas tracking-wide text-gray-900">
                             {player.rankingPoints}
                           </span>
                         </td>
-                        <td className="px-8 py-6">
+                        <td className="px-8 py-6 hidden sm:table-cell">
                           <div className="flex justify-center">
                             {rank === 1 ? <ArrowUp size={16} className="text-green-500" /> : <Minus size={16} className="text-gray-300" />}
                           </div>

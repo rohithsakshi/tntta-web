@@ -44,13 +44,13 @@ export default async function ProfilePage() {
   ]
 
   return (
-    <div className="max-w-4xl space-y-10">
-      <div className="flex items-center justify-between">
+    <div className="max-w-4xl space-y-6 sm:space-y-10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bebas tracking-wider text-gray-900 mb-2">My Profile</h1>
-          <p className="text-gray-500">Your personal and professional details as registered with TNTTA.</p>
+          <h1 className="text-3xl sm:text-4xl font-bebas tracking-wider text-gray-900 mb-1 sm:mb-2 uppercase">My Profile</h1>
+          <p className="text-sm sm:text-base text-gray-500">Your personal and professional details as registered with TNTTA.</p>
         </div>
-        <button className="flex items-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all shadow-sm">
+        <button className="flex items-center justify-center gap-2 px-6 py-3 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-600 hover:bg-gray-50 transition-all shadow-sm w-full sm:w-auto">
           <Edit size={16} />
           Edit Profile
         </button>
@@ -58,24 +58,24 @@ export default async function ProfilePage() {
 
       <div className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden">
         {/* Profile Header Banner */}
-        <div className="h-32 bg-[#0A0A0A] relative">
-          <div className="absolute -bottom-12 left-10">
-             <div className="w-24 h-24 rounded-3xl bg-[#E85D04] border-4 border-white flex items-center justify-center text-3xl font-bold text-white shadow-xl">
+        <div className="h-24 sm:h-32 bg-[#0A0A0A] relative">
+          <div className="absolute -bottom-10 sm:-bottom-12 left-6 sm:left-10">
+             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl sm:rounded-3xl bg-[#E85D04] border-4 border-white flex items-center justify-center text-2xl sm:text-3xl font-bold text-white shadow-xl">
                {user.firstName[0]}{user.lastName[0]}
              </div>
           </div>
         </div>
 
-        <div className="pt-16 pb-12 px-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+        <div className="pt-14 sm:pt-16 pb-8 sm:pb-12 px-6 sm:px-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 sm:gap-x-12 sm:gap-y-8">
             {profileItems.map((item, i) => (
-              <div key={i} className="flex items-start gap-4 p-4 rounded-2xl hover:bg-gray-50 transition-all group">
-                <div className="w-10 h-10 rounded-xl bg-gray-50 text-gray-400 flex items-center justify-center group-hover:bg-[#E85D04]/10 group-hover:text-[#E85D04] transition-all">
+              <div key={i} className="flex items-start gap-4 p-3 sm:p-4 rounded-2xl hover:bg-gray-50 transition-all group">
+                <div className="w-10 h-10 rounded-xl bg-gray-50 text-gray-400 flex items-center justify-center group-hover:bg-[#E85D04]/10 group-hover:text-[#E85D04] transition-all shrink-0">
                   <item.icon size={20} />
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{item.label}</p>
-                  <p className="font-bold text-gray-900">{item.value}</p>
+                  <p className="font-bold text-gray-900 text-sm sm:text-base">{item.value}</p>
                 </div>
               </div>
             ))}
@@ -84,9 +84,9 @@ export default async function ProfilePage() {
       </div>
 
       {/* Account Info */}
-      <div className="bg-orange-50 border border-orange-100 rounded-3xl p-8 flex items-center justify-between">
-        <div className="flex items-center gap-6">
-          <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#E85D04] shadow-sm">
+      <div className="bg-orange-50 border border-orange-100 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="flex items-center gap-4 sm:gap-6 text-center sm:text-left flex-col sm:flex-row">
+          <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#E85D04] shadow-sm shrink-0">
             <ShieldCheck size={24} />
           </div>
           <div>
@@ -94,7 +94,7 @@ export default async function ProfilePage() {
             <p className="text-sm text-gray-600">Your profile is verified and protected by TNTTA security protocols.</p>
           </div>
         </div>
-        <button className="text-[#E85D04] font-bold text-sm hover:underline">Change Password</button>
+        <button className="text-[#E85D04] font-bold text-sm hover:underline whitespace-nowrap">Change Password</button>
       </div>
     </div>
   )

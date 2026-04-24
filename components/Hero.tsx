@@ -8,7 +8,7 @@ import { ChevronRight, ChevronLeft, Trophy, Users, Calendar, MapPin } from "luci
 
 const slides = [
   {
-    image: "https://images.unsplash.com/photo-1544X0TzmHY?w=1600&h=900&q=90&auto=format&fit=crop", // Marcus Clark serve (6NthqMvY_6c)
+    image: "/image1.jpg",
     title: "Upcoming Tournaments",
     subtitle: "Manage. Compete. Win – All in One Place.",
     badge: "Registration Open",
@@ -16,7 +16,7 @@ const slides = [
     link: "/register"
   },
   {
-    image: "https://media.istockphoto.com/id/2211886201/photo/table-tennis-serve-close-up-view-of-woman-playing-ping-pong-table-tennis-ball-and-bat-in-hands.jpg?s=1024x1024&w=is&k=20&c=DaCIsG0NiGmZ3ryvld27iKU8HUoXrfWNEhsOiew3tDQ=",
+    image: "/image2.jpg",
     title: "State Level Championships",
     subtitle: "Competing Across Tamil Nadu.",
     badge: "38 Districts",
@@ -24,7 +24,7 @@ const slides = [
     link: "/rankings"
   },
   {
-    image: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=1600&h=900&q=90&auto=format&fit=crop", // w2cPNzz8CoY
+    image: "/image3.jpg",
     title: "Table Tennis Excellence",
     subtitle: "Precision. Power. Performance.",
     badge: "Since 1960",
@@ -154,37 +154,39 @@ export default function Hero() {
       </div>
 
       {/* Stats Bar */}
-      <div className="absolute bottom-0 left-0 right-0 bg-[#0A0A0A]/90 backdrop-blur-sm border-t border-white/10 py-6 z-20 hidden md:block">
-        <div className="container mx-auto px-4 flex justify-between items-center text-white">
-          <div className="flex items-center gap-3">
-            <MapPin size={24} className="text-[#E85D04]" />
-            <div>
-              <p className="text-xl font-bebas leading-none">38 DISTRICTS</p>
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest">Active Across TN</p>
+      <div className="absolute bottom-0 left-0 right-0 bg-[#0A0A0A]/90 backdrop-blur-sm border-t border-white/10 py-6 z-20">
+        <div className="container mx-auto px-4">
+          <div className="grid grid-cols-2 md:flex md:justify-between items-center text-white gap-y-6 md:gap-y-0">
+            <div className="flex items-center gap-3">
+              <MapPin size={24} className="text-[#E85D04] shrink-0" />
+              <div>
+                <p className="text-xl font-bebas leading-none">38 DISTRICTS</p>
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest">Active Across TN</p>
+              </div>
             </div>
-          </div>
-          <div className="w-[1px] h-8 bg-white/10" />
-          <div className="flex items-center gap-3">
-            <Users size={24} className="text-[#E85D04]" />
-            <div>
-              <p className="text-xl font-bebas leading-none">500+ PLAYERS</p>
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest">Registered Members</p>
+            <div className="hidden md:block w-[1px] h-8 bg-white/10" />
+            <div className="flex items-center gap-3">
+              <Users size={24} className="text-[#E85D04] shrink-0" />
+              <div>
+                <p className="text-xl font-bebas leading-none">500+ PLAYERS</p>
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest">Registered Members</p>
+              </div>
             </div>
-          </div>
-          <div className="w-[1px] h-8 bg-white/10" />
-          <div className="flex items-center gap-3">
-            <Calendar size={24} className="text-[#E85D04]" />
-            <div>
-              <p className="text-xl font-bebas leading-none">12 TOURNAMENTS</p>
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest">Per Year Schedule</p>
+            <div className="hidden md:block w-[1px] h-8 bg-white/10" />
+            <div className="flex items-center gap-3">
+              <Calendar size={24} className="text-[#E85D04] shrink-0" />
+              <div>
+                <p className="text-xl font-bebas leading-none">12 EVENTS</p>
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest">Annual Schedule</p>
+              </div>
             </div>
-          </div>
-          <div className="w-[1px] h-8 bg-white/10" />
-          <div className="flex items-center gap-3">
-            <Trophy size={24} className="text-[#E85D04]" />
-            <div>
-              <p className="text-xl font-bebas leading-none">SINCE 1960</p>
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest">Legacy of Excellence</p>
+            <div className="hidden md:block w-[1px] h-8 bg-white/10" />
+            <div className="flex items-center gap-3">
+              <Trophy size={24} className="text-[#E85D04] shrink-0" />
+              <div>
+                <p className="text-xl font-bebas leading-none">SINCE 1960</p>
+                <p className="text-[10px] text-gray-400 uppercase tracking-widest">Legacy of Excellence</p>
+              </div>
             </div>
           </div>
         </div>

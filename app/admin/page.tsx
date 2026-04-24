@@ -85,8 +85,8 @@ export default async function AdminDashboard() {
     <div className="space-y-10">
       {/* Header */}
       <div>
-        <h1 className="text-5xl font-bebas tracking-wider text-gray-900 mb-2 uppercase">Platform Overview</h1>
-        <p className="text-gray-500 font-dm-sans">Welcome back, Admin. Here's what's happening today.</p>
+        <h1 className="text-4xl sm:text-5xl font-bebas tracking-wider text-gray-900 mb-1 sm:mb-2 uppercase">Platform Overview</h1>
+        <p className="text-sm sm:text-base text-gray-500 font-dm-sans">Welcome back, Admin. Here's what's happening today.</p>
       </div>
 
       {/* Metrics Row */}
@@ -123,17 +123,17 @@ export default async function AdminDashboard() {
       </div>
 
       {/* Main Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-10">
         {/* Recent Activity */}
-        <div className="lg:col-span-2 space-y-8">
-          <div className="bg-white rounded-[40px] p-10 border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between mb-10">
-               <h3 className="text-2xl font-bebas tracking-wide text-gray-900 flex items-center gap-3">
+        <div className="lg:col-span-2 space-y-6 sm:space-y-8">
+          <div className="bg-white rounded-3xl sm:rounded-[40px] p-6 sm:p-10 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between mb-8 sm:mb-10">
+               <h3 className="text-xl sm:text-2xl font-bebas tracking-wide text-gray-900 flex items-center gap-3">
                  <History className="text-[#E85D04]" size={24} />
                  Recent Activity
                </h3>
-               <Link href="/admin/players" className="text-xs font-bold text-[#E85D04] hover:underline uppercase tracking-widest">
-                 View All Players
+               <Link href="/admin/players" className="text-[10px] sm:text-xs font-bold text-[#E85D04] hover:underline uppercase tracking-widest">
+                 View All
                </Link>
             </div>
             
@@ -168,13 +168,13 @@ export default async function AdminDashboard() {
           </div>
 
           {/* Quick Tournaments List */}
-          <div className="bg-white rounded-[40px] p-10 border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between mb-10">
-               <h3 className="text-2xl font-bebas tracking-wide text-gray-900 flex items-center gap-3">
+          <div className="bg-white rounded-3xl sm:rounded-[40px] p-6 sm:p-10 border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between mb-8 sm:mb-10">
+               <h3 className="text-xl sm:text-2xl font-bebas tracking-wide text-gray-900 flex items-center gap-3">
                  <Trophy className="text-[#E85D04]" size={24} />
-                 Latest Tournaments
+                 Tournaments
                </h3>
-               <Link href="/admin/tournaments" className="text-xs font-bold text-[#E85D04] hover:underline uppercase tracking-widest">
+               <Link href="/admin/tournaments" className="text-[10px] sm:text-xs font-bold text-[#E85D04] hover:underline uppercase tracking-widest">
                  Manage All
                </Link>
             </div>
@@ -210,10 +210,10 @@ export default async function AdminDashboard() {
         </div>
 
         {/* Sidebar Actions */}
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {/* Quick Actions */}
-          <div className="bg-gray-900 rounded-[40px] p-10 text-white shadow-2xl">
-            <h3 className="text-2xl font-bebas tracking-wider mb-8 uppercase">Quick Actions</h3>
+          <div className="bg-gray-900 rounded-3xl sm:rounded-[40px] p-6 sm:p-10 text-white shadow-2xl">
+            <h3 className="text-xl sm:text-2xl font-bebas tracking-wider mb-6 sm:mb-8 uppercase text-center sm:text-left">Quick Actions</h3>
             <div className="space-y-4">
               <Link href="/admin/tournaments/create" className="flex items-center gap-4 p-5 bg-white/5 rounded-2xl hover:bg-[#E85D04] transition-all group border border-white/5">
                 <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center group-hover:bg-white/20">
@@ -237,8 +237,8 @@ export default async function AdminDashboard() {
           </div>
 
           {/* Critical Deadlines */}
-          <div className="bg-white rounded-[40px] p-10 border border-gray-100 shadow-sm">
-            <h3 className="text-2xl font-bebas tracking-wide text-gray-900 mb-8 flex items-center gap-3">
+          <div className="bg-white rounded-3xl sm:rounded-[40px] p-6 sm:p-10 border border-gray-100 shadow-sm">
+            <h3 className="text-xl sm:text-2xl font-bebas tracking-wide text-gray-900 mb-6 sm:mb-8 flex items-center gap-3">
               <AlertCircle className="text-red-500" size={24} />
               Deadlines
             </h3>
