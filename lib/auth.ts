@@ -43,6 +43,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           }
         }
 
+        /* 
+        // Database authentication disabled for demo mode
         try {
           const user = await prisma.user.findUnique({
             where: { contact: credentials.contact as string }
@@ -70,6 +72,18 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         } catch (error) {
           console.error("Database fetch failed during login:", error)
           return null
+        }
+        */
+
+        // For demo mode, allow any login that doesn't match above with a generic mock
+        return {
+          id: "demo-user",
+          tnttaId: "TNTTA-DEMO",
+          role: "PLAYER" as UserRole,
+          contact: credentials.contact as string,
+          firstName: "Demo",
+          lastName: "User",
+          email: "demo@user.com",
         }
       }
     })

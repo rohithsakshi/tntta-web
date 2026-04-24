@@ -18,9 +18,38 @@ export default async function MyTournamentsPage() {
       include: { tournament: true },
       orderBy: { appliedAt: "desc" }
     })
+    
+    if (applications.length === 0) {
+      throw new Error("No applications found")
+    }
   } catch (error) {
-    console.info("Using mock applications data (Database offline)")
-    applications = []
+    console.info("Using mock applications data (Demo Mode)")
+    applications = [
+      {
+        id: "mock-app-1",
+        appId: "APP-2025-0001",
+        paymentStatus: "PAID",
+        amount: 50000,
+        category: "MENS",
+        tournament: {
+          title: "84th State Ranking Championship 2025",
+          startDate: new Date("2025-06-15"),
+          venue: "Nehru Indoor Stadium",
+        }
+      },
+      {
+        id: "mock-app-2",
+        appId: "APP-2025-0042",
+        paymentStatus: "PENDING",
+        amount: 30000,
+        category: "JUNIOR",
+        tournament: {
+          title: "District Open Tournament - Madurai",
+          startDate: new Date("2025-07-10"),
+          venue: "District Sports Complex",
+        }
+      }
+    ]
   }
 
   return (

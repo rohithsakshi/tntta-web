@@ -5,21 +5,25 @@ import prisma from "@/lib/prisma"
 
 export const dynamic = "force-dynamic"
 
+import { MOCK_TOURNAMENTS } from "@/lib/data"
+
 async function getTournaments() {
   try {
-    return await prisma.tournament.findMany({
+    const tournaments = await prisma.tournament.findMany({
       where: { status: "COMPLETED" },
       orderBy: { startDate: "desc" },
     })
+    if (tournaments.length === 0) return MOCK_TOURNAMENTS.filter(t => t.status === "OPEN").slice(0, 1) // Just show one for demo
+    return tournaments
   } catch (error) {
-    console.error("Database fetch failed for results tournaments")
-    return []
+    console.info("Using mock tournaments for results (Demo Mode)")
+    return MOCK_TOURNAMENTS.slice(0, 1)
   }
 }
 
 async function getMatchResults(tournamentId: string) {
   try {
-    return await prisma.matchResult.findMany({
+    const results = await prisma.matchResult.findMany({
       where: { tournamentId },
       include: {
         player1: true,
@@ -28,9 +32,36 @@ async function getMatchResults(tournamentId: string) {
       },
       orderBy: [{ category: "asc" }, { playedAt: "desc" }],
     })
+    if (results.length === 0) throw new Error("No results")
+    return results
   } catch (error) {
-    console.error("Database fetch failed for match results")
-    return []
+    console.info("Using mock match results (Demo Mode)")
+    return [
+      {
+        id: "m-1",
+        category: "MENS",
+        round: "FINALS",
+        score: "3-1 (11-8, 11-9, 9-11, 11-7)",
+        winnerId: "p1",
+        player1Id: "p1",
+        player2Id: "p2",
+        player1: { firstName: "Arun", lastName: "Kumar", district: "Chennai" },
+        player2: { firstName: "Suresh", lastName: "R", district: "Madurai" },
+        tournament: { title: "State Ranking 2025" }
+      },
+      {
+        id: "m-2",
+        category: "JUNIOR",
+        round: "SEMI FINALS",
+        score: "3-0 (11-5, 11-4, 11-6)",
+        winnerId: "p3",
+        player1Id: "p3",
+        player2Id: "p4",
+        player1: { firstName: "Vikram", lastName: "V", district: "Coimbatore" },
+        player2: { firstName: "Rahul", lastName: "B", district: "Salem" },
+        tournament: { title: "State Ranking 2025" }
+      }
+    ]
   }
 }
 

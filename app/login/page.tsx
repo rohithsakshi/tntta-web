@@ -110,8 +110,18 @@ function LoginForm() {
           </div>
 
           <div className="mb-10 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 text-[#E85D04] text-xs font-bold mb-4 uppercase tracking-wider border border-orange-200">
+              <span className="w-2 h-2 rounded-full bg-[#E85D04] animate-pulse" />
+              Demo Mode Active
+            </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2 font-dm-sans">Welcome Back</h2>
-            <p className="text-gray-500">Sign in to your TNTTA account</p>
+            <p className="text-gray-500 mb-2">Sign in to your TNTTA account</p>
+            <div className="p-3 bg-gray-50 rounded-lg text-xs text-gray-600 border border-gray-100">
+              <p className="font-bold mb-1 uppercase tracking-tight">Quick Access:</p>
+              <p>Player: <code className="bg-gray-200 px-1 rounded">9999999999</code> / <code className="bg-gray-200 px-1 rounded">password</code></p>
+              <p>Admin: <code className="bg-gray-200 px-1 rounded">0000000000</code> / <code className="bg-gray-200 px-1 rounded">admin</code></p>
+              <p className="mt-1 italic">* Or use any credentials to enter as demo player</p>
+            </div>
           </div>
 
           {/* Role Selector */}

@@ -152,7 +152,13 @@ export default function RegisterPage() {
               exit={{ opacity: 0, x: -20 }}
               className="bg-white rounded-2xl shadow-xl p-8 md:p-12"
             >
-              <h2 className="text-3xl font-bebas tracking-wide text-gray-900 mb-8 border-b pb-4">Player Registration</h2>
+              <div className="flex items-center justify-between mb-8 border-b pb-4">
+                <h2 className="text-3xl font-bebas tracking-wide text-gray-900">Player Registration</h2>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-[#0077B6] text-[10px] font-bold uppercase tracking-wider border border-blue-100">
+                  <span className="w-2 h-2 rounded-full bg-[#0077B6] animate-pulse" />
+                  Demo Registration
+                </div>
+              </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div>

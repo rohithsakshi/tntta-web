@@ -1,7 +1,7 @@
 import prisma from "./prisma"
 
 // Mock Data
-const MOCK_TOURNAMENTS = [
+export const MOCK_TOURNAMENTS = [
   {
     id: "mock-1",
     slug: "state-ranking-2025",
@@ -26,7 +26,7 @@ const MOCK_TOURNAMENTS = [
   }
 ]
 
-const MOCK_NEWS = [
+export const MOCK_NEWS = [
   {
     id: "news-1",
     title: "Tamil Nadu Players Shine at Nationals",
@@ -92,7 +92,32 @@ export async function getRecentResults() {
     })
     return results
   } catch (error) {
-    console.info("Using mock results (Database offline)")
-    return []
+    console.info("Using mock results (Demo Mode)")
+    return [
+      {
+        id: "res-1",
+        category: "MENS",
+        round: "FINALS",
+        score: "3-1",
+        winnerId: "p1",
+        player1Id: "p1",
+        player2Id: "p2",
+        player1: { firstName: "Arun", lastName: "Kumar" },
+        player2: { firstName: "Suresh", lastName: "R" },
+        tournament: { title: "State Ranking 2025" }
+      },
+      {
+        id: "res-2",
+        category: "JUNIOR",
+        round: "FINALS",
+        score: "3-0",
+        winnerId: "p3",
+        player1Id: "p3",
+        player2Id: "p4",
+        player1: { firstName: "Vikram", lastName: "V" },
+        player2: { firstName: "Rahul", lastName: "B" },
+        tournament: { title: "State Ranking 2025" }
+      }
+    ]
   }
 }
