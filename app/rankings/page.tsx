@@ -7,15 +7,20 @@ import { Category, Gender } from "@prisma/client"
 export const dynamic = "force-dynamic"
 
 async function getRankings(category?: string, gender?: string) {
-  return await prisma.user.findMany({
-    where: {
-      role: "PLAYER",
-      category: category && category !== "ALL" ? (category as Category) : undefined,
-      gender: gender && gender !== "ALL" ? (gender as Gender) : undefined,
-    },
-    orderBy: { rankingPoints: "desc" },
-    take: 50,
-  })
+  try {
+    return await prisma.user.findMany({
+      where: {
+        role: "PLAYER",
+        category: category && category !== "ALL" ? (category as Category) : undefined,
+        gender: gender && gender !== "ALL" ? (gender as Gender) : undefined,
+      },
+      orderBy: { rankingPoints: "desc" },
+      take: 50,
+    })
+  } catch (error) {
+    console.error("Database fetch failed for rankings page")
+    return []
+  }
 }
 
 export default async function RankingsPage({ 

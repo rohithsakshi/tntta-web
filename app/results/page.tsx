@@ -6,22 +6,32 @@ import prisma from "@/lib/prisma"
 export const dynamic = "force-dynamic"
 
 async function getTournaments() {
-  return await prisma.tournament.findMany({
-    where: { status: "COMPLETED" },
-    orderBy: { startDate: "desc" },
-  })
+  try {
+    return await prisma.tournament.findMany({
+      where: { status: "COMPLETED" },
+      orderBy: { startDate: "desc" },
+    })
+  } catch (error) {
+    console.error("Database fetch failed for results tournaments")
+    return []
+  }
 }
 
 async function getMatchResults(tournamentId: string) {
-  return await prisma.matchResult.findMany({
-    where: { tournamentId },
-    include: {
-      player1: true,
-      player2: true,
-      tournament: true,
-    },
-    orderBy: [{ category: "asc" }, { playedAt: "desc" }],
-  })
+  try {
+    return await prisma.matchResult.findMany({
+      where: { tournamentId },
+      include: {
+        player1: true,
+        player2: true,
+        tournament: true,
+      },
+      orderBy: [{ category: "asc" }, { playedAt: "desc" }],
+    })
+  } catch (error) {
+    console.error("Database fetch failed for match results")
+    return []
+  }
 }
 
 export default async function ResultsPage({ 

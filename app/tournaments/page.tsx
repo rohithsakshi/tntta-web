@@ -8,15 +8,20 @@ import { TournamentStatus } from "@prisma/client"
 export const dynamic = "force-dynamic"
 
 async function getTournaments(status?: string) {
-  return await prisma.tournament.findMany({
-    where: status && status !== "ALL" ? { status: status as TournamentStatus } : {},
-    orderBy: { startDate: "asc" },
-    include: {
-      _count: {
-        select: { applications: true }
+  try {
+    return await prisma.tournament.findMany({
+      where: status && status !== "ALL" ? { status: status as TournamentStatus } : {},
+      orderBy: { startDate: "asc" },
+      include: {
+        _count: {
+          select: { applications: true }
+        }
       }
-    }
-  })
+    })
+  } catch (error) {
+    console.error("Database fetch failed for tournaments page")
+    return []
+  }
 }
 
 export default async function TournamentsPage({ 

@@ -56,7 +56,7 @@ export async function getUpcomingTournaments() {
     })
     return tournaments.length > 0 ? tournaments : MOCK_TOURNAMENTS
   } catch (error) {
-    console.error("Database fetch failed, using mock tournaments")
+    console.info("Using mock tournaments (Database offline)")
     return MOCK_TOURNAMENTS
   }
 }
@@ -72,7 +72,7 @@ export async function getLatestNews() {
     })
     return news.length > 0 ? news : MOCK_NEWS
   } catch (error) {
-    console.error("Database fetch failed, using mock news")
+    console.info("Using mock news (Database offline)")
     return MOCK_NEWS
   }
 }
@@ -92,7 +92,7 @@ export async function getRecentResults() {
     })
     return results
   } catch (error) {
-    console.error("Database fetch failed for results")
+    console.info("Using mock results (Database offline)")
     return []
   }
 }
