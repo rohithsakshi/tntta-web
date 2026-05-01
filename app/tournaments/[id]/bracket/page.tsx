@@ -2,13 +2,15 @@ import React from 'react';
 import { PrismaClient } from '@prisma/client';
 import BracketView from '@/components/fixtures/BracketView';
 
-const prisma = new PrismaClient();
+// Prisma client will be instantiated lazily inside getBracketData when needed
+
 
 async function getBracketData(tournamentId: string, category?: string) {
   if (!process.env.DATABASE_URL) {
     console.warn('DATABASE_URL not set – skipping Prisma query for bracket data');
     return [];
   }
+  const prisma = new PrismaClient();
   const bracket = await prisma.tournamentBracket.findUnique({
     where: { tournamentId },
   });

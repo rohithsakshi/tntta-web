@@ -7,6 +7,11 @@ const prisma = new PrismaClient();
 export const dynamic = "force-dynamic";
 
 async function getFixtures(tournamentId: string) {
+  if (!process.env.DATABASE_URL) {
+    console.warn('DATABASE_URL not set – returning empty fixtures');
+    return { playingNow: [], upNext: [] };
+  }
+
   const [tableStatuses, upNext] = await Promise.all([
     prisma.tableStatus.findMany({
       where: { tournamentId },
