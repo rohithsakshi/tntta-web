@@ -19,8 +19,9 @@ async function getScheduleData(tournamentId: string) {
   return { slots, startTime: tournament?.startDate || new Date() };
 }
 
-export default async function TournamentSchedulePage({ params }: { params: { id: string } }) {
-  const { slots, startTime } = await getScheduleData(params.id);
+export default async function TournamentSchedulePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const { slots, startTime } = await getScheduleData(id);
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white p-6">

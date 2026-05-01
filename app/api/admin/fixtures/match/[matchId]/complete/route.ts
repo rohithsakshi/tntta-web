@@ -6,9 +6,9 @@ import { advanceTable } from "@/lib/fixtures/reshuffler";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { matchId: string } }
+  { params }: { params: Promise<{ matchId: string }> }
 ) {
-  const { matchId } = params;
+  const { matchId } = await params;
   const { score, winnerId } = await req.json();
 
   try {

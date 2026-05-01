@@ -4,9 +4,9 @@ import { pusher } from "@/lib/pusher";
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { matchId: string } }
+  { params }: { params: Promise<{ matchId: string }> }
 ) {
-  const { matchId } = params;
+  const { matchId } = await params;
   const { player1Present, player2Present } = await req.json();
 
   try {

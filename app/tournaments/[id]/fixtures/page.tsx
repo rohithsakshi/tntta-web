@@ -50,8 +50,9 @@ async function getFixtures(tournamentId: string) {
   };
 }
 
-export default async function PublicFixturesPage({ params }: { params: { id: string } }) {
-  const fixtures = await getFixtures(params.id);
+export default async function PublicFixturesPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const fixtures = await getFixtures(id);
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white p-6">
@@ -70,7 +71,7 @@ export default async function PublicFixturesPage({ params }: { params: { id: str
         </header>
 
         <LiveFixturesBoard 
-          tournamentId={params.id} 
+          tournamentId={id} 
           initialTables={fixtures.playingNow} 
           initialUpNext={fixtures.upNext} 
         />

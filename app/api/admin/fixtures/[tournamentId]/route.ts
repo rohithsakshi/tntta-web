@@ -4,9 +4,9 @@ import { MatchStatus } from "@prisma/client";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { tournamentId: string } }
+  { params }: { params: Promise<{ tournamentId: string }> }
 ) {
-  const { tournamentId } = params;
+  const { tournamentId } = await params;
   const { searchParams } = new URL(req.url);
   const table = searchParams.get("table");
   const category = searchParams.get("category");
@@ -33,9 +33,9 @@ export async function GET(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { tournamentId: string } }
+  { params }: { params: Promise<{ tournamentId: string }> }
 ) {
-  const { tournamentId } = params;
+  const { tournamentId } = await params;
 
   try {
     await prisma.$transaction([

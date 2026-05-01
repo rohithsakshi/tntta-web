@@ -3,9 +3,9 @@ import { handleWalkover, advanceTable } from "@/lib/fixtures/reshuffler";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { matchId: string } }
+  { params }: { params: Promise<{ matchId: string }> }
 ) {
-  const { matchId } = params;
+  const { matchId } = await params;
   const { absentPlayerId, reason } = await req.json();
 
   try {

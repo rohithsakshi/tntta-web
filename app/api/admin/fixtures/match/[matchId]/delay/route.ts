@@ -5,9 +5,9 @@ import { pusher } from "@/lib/pusher";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { matchId: string } }
+  { params }: { params: Promise<{ matchId: string }> }
 ) {
-  const { matchId } = params;
+  const { matchId } = await params;
   const { estimatedExtraMinutes } = await req.json();
 
   try {

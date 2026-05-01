@@ -49,13 +49,14 @@ async function getAdminData(tournamentId: string) {
   };
 }
 
-export default async function AdminFixturePage({ params }: { params: { tournamentId: string } }) {
-  const data = await getAdminData(params.tournamentId);
+export default async function AdminFixturePage({ params }: { params: Promise<{ tournamentId: string }> }) {
+  const { tournamentId } = await params;
+  const data = await getAdminData(tournamentId);
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white p-6">
       <AdminFixturesControl 
-        tournamentId={params.tournamentId} 
+        tournamentId={tournamentId} 
         initialTables={data.tables} 
         initialUpNext={data.upNext} 
       />
