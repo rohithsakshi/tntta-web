@@ -20,7 +20,7 @@ import TournamentsTable from "./TournamentsTable"
 
 export const dynamic = "force-dynamic"
 
-import { MOCK_TOURNAMENTS } from "@/lib/data"
+
 
 async function getTournaments() {
   try {
