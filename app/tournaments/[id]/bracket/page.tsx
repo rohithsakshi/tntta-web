@@ -5,9 +5,14 @@ import BracketView from '@/components/fixtures/BracketView';
 const prisma = new PrismaClient();
 
 async function getBracketData(tournamentId: string, category?: string) {
+  if (!process.env.DATABASE_URL) {
+    console.warn('DATABASE_URL not set – skipping Prisma query for bracket data');
+    return [];
+  }
   const bracket = await prisma.tournamentBracket.findUnique({
     where: { tournamentId },
   });
+
 
   if (!bracket) return null;
 
