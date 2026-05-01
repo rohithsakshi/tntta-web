@@ -28,7 +28,7 @@ async function getAdminData(tournamentId: string) {
   ]);
 
   const tablesWithMatches = await Promise.all(
-    tableStatuses.map(async (table) => {
+    tableStatuses.map(async (table: any) => {
       let currentMatch = null;
       if (table.currentMatchId) {
         currentMatch = await prisma.matchSlot.findUnique({

@@ -29,7 +29,7 @@ async function getFixtures(tournamentId: string) {
 
   // Fetch current match details for each table
   const tablesWithMatches = await Promise.all(
-    tableStatuses.map(async (table) => {
+    tableStatuses.map(async (table: any) => {
       let currentMatch = null;
       if (table.currentMatchId) {
         currentMatch = await prisma.matchSlot.findUnique({
