@@ -57,7 +57,13 @@ export default async function TournamentDetailPage({ params }: { params: Promise
     notFound()
   }
 
-  const isClosed = new Date() > new Date(tournament.registrationDeadline)
+  const now = new Date()
+  const registrationOpens = new Date(tournament.registrationOpens)
+  const registrationDeadline = new Date(tournament.registrationDeadline)
+  
+  const isNotYetOpen = now < registrationOpens
+  const isPastDeadline = now > registrationDeadline
+  const isRegistrationPossible = !isNotYetOpen && !isPastDeadline && (tournament.status === "OPEN" || tournament.status === "UPCOMING")
 
   return (
     <div className="bg-[#FAFAFA] min-h-screen">
@@ -89,7 +95,7 @@ export default async function TournamentDetailPage({ params }: { params: Promise
                   </span>
                   <span className="text-white/60 text-xs font-bold tracking-widest flex items-center gap-1">
                     <Trophy size={14} className="text-[#E85D04]" />
-                    STATE RANKING
+                    {tournament.type?.replace("_", " ") || "TOURNAMENT"}
                   </span>
                 </div>
                 <h1 className="text-4xl md:text-6xl font-bebas tracking-wider text-white leading-tight">
@@ -168,12 +174,12 @@ export default async function TournamentDetailPage({ params }: { params: Promise
                   <Clock className="text-[#E85D04]" size={20} />
                   <div>
                     <p className="font-bold">Deadline</p>
-                    <p className="text-xs">{format(new Date(tournament.registrationDeadline), "PPP")}</p>
+                    <p className="text-xs">{format(registrationDeadline, "PPP")}</p>
                   </div>
                 </div>
               </div>
 
-              {!isClosed && tournament.status === "OPEN" ? (
+              {isRegistrationPossible ? (
                 <Link 
                   href={`/tournaments/${tournament.slug}/register`}
                   className="w-full bg-[#E85D04] text-white py-4 rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#C44D03] transition-all shadow-lg"
@@ -182,12 +188,19 @@ export default async function TournamentDetailPage({ params }: { params: Promise
                   <ChevronRight size={20} />
                 </Link>
               ) : (
-                <button 
-                  disabled 
-                  className="w-full bg-gray-100 text-gray-400 py-4 rounded-xl font-bold cursor-not-allowed"
-                >
-                  Registrations Closed
-                </button>
+                <div className="space-y-4">
+                  <button 
+                    disabled 
+                    className="w-full bg-gray-100 text-gray-400 py-4 rounded-xl font-bold cursor-not-allowed"
+                  >
+                    {isNotYetOpen ? "Registration Not Started" : isPastDeadline ? "Registration Closed" : "Tournament Draft"}
+                  </button>
+                  {isNotYetOpen && (
+                    <p className="text-[10px] font-bold text-center text-blue-500 uppercase tracking-widest">
+                      Opens on {format(registrationOpens, "MMM d, yyyy")}
+                    </p>
+                  )}
+                </div>
               )}
 
               <p className="text-center text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-6">

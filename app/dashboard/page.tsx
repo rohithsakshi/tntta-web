@@ -25,19 +25,11 @@ async function getPlayerStats(userId: string) {
 
     return { user, applications, matches }
   } catch (error) {
-    console.info("Using mock dashboard stats (Demo Mode)")
+    console.warn("Database fetch failed. Returning empty stats (offline).")
     return {
-      user: {
-        id: userId,
-        tnttaId: "TNTTA-MOCK",
-        firstName: "Demo",
-        lastName: "Player",
-        district: "Chennai",
-        rankingPoints: 1200,
-        category: "MENS"
-      },
-      applications: 3,
-      matches: 12
+      user: null,
+      applications: 0,
+      matches: 0
     }
   }
 }

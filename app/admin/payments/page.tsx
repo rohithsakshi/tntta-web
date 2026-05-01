@@ -15,6 +15,7 @@ import StatsCard from "@/components/admin/StatsCard"
 import StatusBadge from "@/components/admin/StatusBadge"
 import DataTable from "@/components/admin/DataTable"
 import { format } from "date-fns"
+import PaymentsTable from "./PaymentsTable"
 
 export const dynamic = "force-dynamic"
 
@@ -49,52 +50,6 @@ async function getPaymentData() {
 
 export default async function AdminPaymentsPage() {
   const { payments, totalRevenue, paidCount, pendingCount } = await getPaymentData()
-
-  const columns = [
-    {
-      header: "Transaction ID",
-      accessorKey: "appId",
-      cell: (item: any) => (
-        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{item.appId}</span>
-      )
-    },
-    {
-      header: "Player",
-      accessorKey: "player.firstName",
-      cell: (item: any) => (
-        <div className="flex flex-col">
-          <span className="font-bold text-gray-900">{item.player.firstName} {item.player.lastName}</span>
-          <span className="text-[10px] text-gray-400 font-bold uppercase">{item.player.tnttaId}</span>
-        </div>
-      )
-    },
-    {
-      header: "Tournament",
-      accessorKey: "tournament.title",
-      cell: (item: any) => (
-        <span className="text-sm text-gray-600 truncate max-w-[200px] inline-block">{item.tournament.title}</span>
-      )
-    },
-    {
-      header: "Amount",
-      accessorKey: "amount",
-      cell: (item: any) => (
-        <span className="font-bold text-gray-900 font-bebas text-lg tracking-wide">₹{item.amount / 100}</span>
-      )
-    },
-    {
-      header: "Status",
-      accessorKey: "paymentStatus",
-      cell: (item: any) => <StatusBadge status={item.paymentStatus} type="payment" />
-    },
-    {
-      header: "Date",
-      accessorKey: "appliedAt",
-      cell: (item: any) => (
-        <span className="text-xs text-gray-500">{format(new Date(item.appliedAt), "MMM d, yyyy")}</span>
-      )
-    }
-  ]
 
   return (
     <div className="space-y-10">
@@ -145,12 +100,7 @@ export default async function AdminPaymentsPage() {
              Transaction History
            </h3>
         </div>
-        <DataTable 
-          columns={columns} 
-          data={payments} 
-          searchKey="appId"
-          searchPlaceholder="Search by Transaction ID..."
-        />
+        <PaymentsTable payments={payments} />
       </div>
     </div>
   )

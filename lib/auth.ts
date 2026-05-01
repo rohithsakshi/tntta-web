@@ -10,41 +10,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       name: "Credentials",
       credentials: {
         contact: { label: "Contact Number", type: "text" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
+        role: { label: "Role", type: "text" }
       },
       async authorize(credentials) {
         if (!credentials?.contact || !credentials?.password) {
           return null
         }
 
-        // Dummy login bypass for PLAYER
-        if (credentials.contact === "9999999999" && credentials.password === "password") {
-          return {
-            id: "mock-user-1",
-            tnttaId: "TNTTA-9999",
-            role: "PLAYER" as UserRole,
-            contact: "9999999999",
-            firstName: "Demo",
-            lastName: "Player",
-            email: "demo@example.com",
-          }
-        }
-
-        // Dummy login bypass for ADMIN
-        if (credentials.contact === "0000000000" && credentials.password === "admin") {
-          return {
-            id: "mock-admin-1",
-            tnttaId: "TNTTA-ADMIN",
-            role: "ADMIN" as UserRole,
-            contact: "0000000000",
-            firstName: "System",
-            lastName: "Admin",
-            email: "admin@tntta.com",
-          }
-        }
-
-        /* 
-        // Database authentication disabled for demo mode
         try {
           const user = await prisma.user.findUnique({
             where: { contact: credentials.contact as string }
@@ -60,6 +33,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             return null
           }
 
+          if (credentials.role && user.role !== credentials.role) {
+            return null
+          }
+
           return {
             id: user.id,
             tnttaId: user.tnttaId,
@@ -70,20 +47,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: user.email,
           }
         } catch (error) {
-          console.error("Database fetch failed during login:", error)
+          console.error("Authentication error:", error)
           return null
-        }
-        */
-
-        // For demo mode, allow any login that doesn't match above with a generic mock
-        return {
-          id: "demo-user",
-          tnttaId: "TNTTA-DEMO",
-          role: "PLAYER" as UserRole,
-          contact: credentials.contact as string,
-          firstName: "Demo",
-          lastName: "User",
-          email: "demo@user.com",
         }
       }
     })

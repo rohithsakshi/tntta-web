@@ -16,16 +16,21 @@ export const dynamic = "force-dynamic"
 async function getRankingStats() {
   const currentSeason = "2025-26" // Should be dynamic
   
-  const [totalRanked, categories] = await Promise.all([
-    prisma.rankingEntry.count({ where: { season: currentSeason } }),
-    prisma.rankingEntry.groupBy({
-      by: ["category"],
-      where: { season: currentSeason },
-      _count: true
-    })
-  ])
+  try {
+    const [totalRanked, categories] = await Promise.all([
+      prisma.rankingEntry.count({ where: { season: currentSeason } }),
+      prisma.rankingEntry.groupBy({
+        by: ["category"],
+        where: { season: currentSeason },
+        _count: true
+      })
+    ])
 
-  return { totalRanked, categories, currentSeason }
+    return { totalRanked, categories, currentSeason }
+  } catch (error) {
+    console.error("Error fetching ranking stats:", error)
+    return { totalRanked: 0, categories: [], currentSeason }
+  }
 }
 
 export default async function AdminRankingsPage() {

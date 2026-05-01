@@ -1,52 +1,7 @@
 import prisma from "./prisma"
 
-// Mock Data
-export const MOCK_TOURNAMENTS = [
-  {
-    id: "mock-1",
-    slug: "state-ranking-2025",
-    title: "84th State Ranking Championship 2025",
-    startDate: new Date("2025-06-15"),
-    endDate: new Date("2025-06-18"),
-    venue: "Nehru Indoor Stadium",
-    location: "Chennai",
-    entryFee: 50000,
-    status: "OPEN"
-  },
-  {
-    id: "mock-2",
-    slug: "district-open-2025",
-    title: "District Open Tournament - Madurai",
-    startDate: new Date("2025-07-10"),
-    endDate: new Date("2025-07-12"),
-    venue: "District Sports Complex",
-    location: "Madurai",
-    entryFee: 30000,
-    status: "OPEN"
-  }
-]
-
-export const MOCK_NEWS = [
-  {
-    id: "news-1",
-    title: "Tamil Nadu Players Shine at Nationals",
-    excerpt: "Record-breaking performance by our junior players in the recently concluded national championships.",
-    publishedAt: new Date(),
-    imageUrl: "https://media.istockphoto.com/id/1425158165/photo/table-tennis-ping-pong-paddles-and-white-ball-on-blue-board.jpg?s=612x612&w=is&k=20&c=q7kPR8BzNCOngSWY5t-VHNYfTK3_iQq4klx22sNAvS8=",
-    isPublished: true
-  },
-  {
-    id: "news-2",
-    title: "New Coaching Camp Announced",
-    excerpt: "TNTTA announces a high-performance coaching camp for sub-junior categories starting next month.",
-    publishedAt: new Date(),
-    imageUrl: "https://media.istockphoto.com/id/178826162/photo/service-on-table-tennis.jpg?s=612x612&w=is&k=20&c=wN1HhMjrniuoHWhYs2BAobaIGUN_N6qJPjhnq9td1Tc=",
-    isPublished: true
-  }
-]
-
 export async function getUpcomingTournaments() {
-  if (!prisma) return MOCK_TOURNAMENTS
+  if (!prisma) return []
   
   try {
     const tournaments = await prisma.tournament.findMany({
@@ -54,15 +9,15 @@ export async function getUpcomingTournaments() {
       orderBy: { startDate: "asc" },
       take: 3,
     })
-    return tournaments.length > 0 ? tournaments : MOCK_TOURNAMENTS
+    return tournaments
   } catch (error) {
-    console.info("Using mock tournaments (Database offline)")
-    return MOCK_TOURNAMENTS
+    console.error("Error fetching tournaments:", error)
+    return []
   }
 }
 
 export async function getLatestNews() {
-  if (!prisma) return MOCK_NEWS
+  if (!prisma) return []
   
   try {
     const news = await prisma.newsItem.findMany({
@@ -70,10 +25,10 @@ export async function getLatestNews() {
       orderBy: { publishedAt: "desc" },
       take: 2,
     })
-    return news.length > 0 ? news : MOCK_NEWS
+    return news
   } catch (error) {
-    console.info("Using mock news (Database offline)")
-    return MOCK_NEWS
+    console.error("Error fetching news:", error)
+    return []
   }
 }
 
@@ -92,32 +47,7 @@ export async function getRecentResults() {
     })
     return results
   } catch (error) {
-    console.info("Using mock results (Demo Mode)")
-    return [
-      {
-        id: "res-1",
-        category: "MENS",
-        round: "FINALS",
-        score: "3-1",
-        winnerId: "p1",
-        player1Id: "p1",
-        player2Id: "p2",
-        player1: { firstName: "Arun", lastName: "Kumar" },
-        player2: { firstName: "Suresh", lastName: "R" },
-        tournament: { title: "State Ranking 2025" }
-      },
-      {
-        id: "res-2",
-        category: "JUNIOR",
-        round: "FINALS",
-        score: "3-0",
-        winnerId: "p3",
-        player1Id: "p3",
-        player2Id: "p4",
-        player1: { firstName: "Vikram", lastName: "V" },
-        player2: { firstName: "Rahul", lastName: "B" },
-        tournament: { title: "State Ranking 2025" }
-      }
-    ]
+    console.error("Error fetching results:", error)
+    return []
   }
 }

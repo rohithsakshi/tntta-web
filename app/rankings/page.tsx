@@ -18,24 +18,10 @@ async function getRankings(category?: string, gender?: string) {
       take: 50,
     })
 
-    if (players.length === 0) {
-      throw new Error("No players found")
-    }
     return players
   } catch (error) {
-    console.info("Using mock rankings (Demo Mode)")
-    // Generate some mock players
-    return Array.from({ length: 10 }).map((_, i) => ({
-      id: `mock-p-${i}`,
-      firstName: ["Arun", "Suresh", "Priya", "Deepa", "Vikram", "Rahul", "Anjali", "Karthik"][i % 8],
-      lastName: ["Kumar", "R", "S", "M", "V", "B", "N", "P"][i % 8],
-      tnttaId: `TNTTA-2025-${(1001 + i).toString()}`,
-      district: ["Chennai", "Madurai", "Coimbatore", "Salem", "Trichy"][i % 5],
-      club: ["SK Academy", "Nungambakkam Club", "Youth Center", null][i % 4],
-      rankingPoints: 2500 - (i * 150),
-      category: category !== "ALL" ? category : "MENS",
-      gender: gender !== "ALL" ? gender : "MALE"
-    }))
+    console.error("Error fetching rankings:", error)
+    return []
   }
 }
 

@@ -7,7 +7,6 @@ import { TournamentStatus } from "@prisma/client"
 
 export const dynamic = "force-dynamic"
 
-import { MOCK_TOURNAMENTS } from "@/lib/data"
 
 async function getTournaments(status?: string) {
   try {
@@ -21,20 +20,10 @@ async function getTournaments(status?: string) {
       }
     })
     
-    if (tournaments.length === 0 && status === "ALL") {
-      return MOCK_TOURNAMENTS.map(t => ({
-        ...t,
-        _count: { applications: Math.floor(Math.random() * 50) }
-      }))
-    }
-    
     return tournaments
   } catch (error) {
-    console.info("Using mock tournaments for tournaments page (Demo Mode)")
-    return MOCK_TOURNAMENTS.map(t => ({
-      ...t,
-      _count: { applications: Math.floor(Math.random() * 50) }
-    }))
+    console.error("Error fetching tournaments:", error)
+    return []
   }
 }
 

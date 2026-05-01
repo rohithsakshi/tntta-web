@@ -78,45 +78,17 @@ async function getDashboardData() {
       recentTournaments
     }
   } catch (error) {
-    console.info("Using mock admin dashboard data (Demo Mode)")
+    console.warn("Database fetch failed. Returning empty data (offline).")
     return {
-      playerCount: 150,
-      newPlayersThisMonth: 12,
-      activeTournaments: 4,
-      openTournaments: 2,
-      pendingPayments: 5,
-      totalCollected: 25000,
-      recentApplications: [
-        {
-          id: "app-1",
-          appliedAt: new Date(),
-          paymentStatus: "PAID",
-          player: { firstName: "Demo", lastName: "Player" },
-          tournament: { title: "State Ranking 2025" }
-        },
-        {
-          id: "app-2",
-          appliedAt: new Date(Date.now() - 3600000),
-          paymentStatus: "PENDING",
-          player: { firstName: "Jane", lastName: "Smith" },
-          tournament: { title: "District Open" }
-        }
-      ],
-      upcomingDeadlines: [
-        {
-          id: "tourn-1",
-          title: "State Ranking 2025",
-          registrationDeadline: new Date(Date.now() + 86400000 * 2)
-        }
-      ],
-      recentTournaments: [
-        {
-          id: "tourn-1",
-          title: "State Ranking 2025",
-          status: "OPEN",
-          registrationDeadline: new Date(Date.now() + 86400000 * 2)
-        }
-      ]
+      playerCount: 0,
+      newPlayersThisMonth: 0,
+      activeTournaments: 0,
+      openTournaments: 0,
+      pendingPayments: 0,
+      totalCollected: 0,
+      recentApplications: [],
+      upcomingDeadlines: [],
+      recentTournaments: []
     }
   }
 }

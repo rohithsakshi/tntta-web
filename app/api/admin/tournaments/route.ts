@@ -29,7 +29,24 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json()
+    console.info("Tournament creation attempt:", { title: body.title, userId: session.user.id })
+    
     const validatedData = tournamentSchema.parse(body)
+
+    let createdById = session.user.id
+
+    // Fallback if session is stale and contains mock ID
+    if (createdById === "admin-readme") {
+      const realAdmin = await prisma.user.findUnique({
+        where: { contact: "9999999999" }
+      })
+      if (realAdmin) {
+        createdById = realAdmin.id
+        console.info("Corrected stale session ID to real admin ID:", createdById)
+      } else {
+        return NextResponse.json({ error: "Admin user not found in database. Please run seeding." }, { status: 500 })
+      }
+    }
 
     const slug = validatedData.title
       .toLowerCase()
@@ -40,16 +57,19 @@ export async function POST(req: Request) {
       data: {
         ...validatedData,
         slug,
-        createdById: session.user.id,
+        createdById,
       },
     })
 
     return NextResponse.json(tournament, { status: 201 })
-  } catch (error) {
+  } catch (error: any) {
+    console.error("Tournament creation error DETAILS:", error)
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 })
     }
-    console.error("Tournament creation error:", error)
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
+    return NextResponse.json({ 
+      error: "Internal Server Error", 
+      details: error.message || String(error)
+    }, { status: 500 })
   }
 }

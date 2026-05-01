@@ -11,46 +11,14 @@ export default async function MyTournamentsPage() {
   const session = await auth()
   if (!session) redirect("/login")
 
-  let applications = []
-  try {
-    applications = await prisma.tournamentApplication.findMany({
-      where: { playerId: session.user.id },
-      include: { tournament: true },
-      orderBy: { appliedAt: "desc" }
-    })
-    
-    if (applications.length === 0) {
-      throw new Error("No applications found")
-    }
-  } catch (error) {
-    console.info("Using mock applications data (Demo Mode)")
-    applications = [
-      {
-        id: "mock-app-1",
-        appId: "APP-2025-0001",
-        paymentStatus: "PAID",
-        amount: 50000,
-        category: "MENS",
-        tournament: {
-          title: "84th State Ranking Championship 2025",
-          startDate: new Date("2025-06-15"),
-          venue: "Nehru Indoor Stadium",
-        }
-      },
-      {
-        id: "mock-app-2",
-        appId: "APP-2025-0042",
-        paymentStatus: "PENDING",
-        amount: 30000,
-        category: "JUNIOR",
-        tournament: {
-          title: "District Open Tournament - Madurai",
-          startDate: new Date("2025-07-10"),
-          venue: "District Sports Complex",
-        }
-      }
-    ]
-  }
+  const applications = await prisma.tournamentApplication.findMany({
+    where: { playerId: session.user.id },
+    include: { tournament: true },
+    orderBy: { appliedAt: "desc" }
+  }).catch((error: any) => {
+    console.error("Error fetching applications:", error)
+    return []
+  })
 
   return (
     <div className="space-y-10">
@@ -105,9 +73,12 @@ export default async function MyTournamentsPage() {
               <div className="bg-gray-50 p-8 flex flex-col justify-center border-l border-gray-100 min-w-[200px]">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 text-center">Amount</p>
                 <p className="text-3xl font-bebas text-gray-900 text-center mb-6">₹{app.amount / 100}</p>
-                <button className="w-full py-3 bg-white border border-gray-200 rounded-xl text-xs font-bold hover:bg-gray-100 transition-all">
+                <Link 
+                  href={`/dashboard/tournaments/${app.id}/slip`}
+                  className="w-full py-3 bg-white border border-gray-200 rounded-xl text-xs font-bold hover:bg-gray-100 transition-all text-center block"
+                >
                   VIEW SLIP
-                </button>
+                </Link>
               </div>
             </div>
           ))}

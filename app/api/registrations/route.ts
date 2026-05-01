@@ -9,8 +9,6 @@ export async function POST(req: Request) {
     const body = await req.json()
     const validatedData = playerRegistrationSchema.parse(body)
 
-    /* 
-    // Database registration disabled for demo mode
     // Check if contact already exists
     const existingUser = await prisma.user.findUnique({
       where: { contact: validatedData.contact }
@@ -41,20 +39,18 @@ export async function POST(req: Request) {
         contact: validatedData.contact,
         passwordHash,
         gender: validatedData.gender,
-        dob: validatedData.dob,
+        dob: new Date(validatedData.dob),
         district: validatedData.district,
         club: validatedData.club || null,
         category: validatedData.category,
         role: UserRole.PLAYER,
       }
     })
-    */
 
-    // Mock response for demo mode
     return NextResponse.json({ 
       success: true, 
-      tnttaId: `TNTTA-DEMO-${Math.floor(1000 + Math.random() * 9000)}`, 
-      message: "Registration successful (DEMO MODE)" 
+      tnttaId: user.tnttaId,
+      message: "Registration successful" 
     })
 
   } catch (error: any) {

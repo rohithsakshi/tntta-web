@@ -16,6 +16,7 @@ import StatsCard from "@/components/admin/StatsCard"
 import StatusBadge from "@/components/admin/StatusBadge"
 import DataTable from "@/components/admin/DataTable"
 import { format } from "date-fns"
+import TournamentsTable from "./TournamentsTable"
 
 export const dynamic = "force-dynamic"
 
@@ -46,115 +47,13 @@ async function getTournaments() {
     if (tournaments.length === 0) throw new Error("No tournaments")
     return { tournaments, statsMap }
   } catch (error) {
-    console.info("Using mock admin tournaments data (Demo Mode)")
-    const tournaments = MOCK_TOURNAMENTS.map(t => ({
-      ...t,
-      _count: { applications: Math.floor(Math.random() * 50) }
-    }))
-    
-    const statsMap = {
-      "OPEN": 2,
-      "UPCOMING": 1,
-      "ONGOING": 0,
-      "COMPLETED": 0
-    }
-
-    return { tournaments, statsMap }
+    console.warn("Database fetch failed. Returning empty data (offline).")
+    return { tournaments: [], statsMap: {} }
   }
 }
 
 export default async function AdminTournamentsPage() {
   const { tournaments, statsMap } = await getTournaments()
-
-  const columns = [
-    {
-      header: "Tournament",
-      accessorKey: "title",
-      cell: (item: any) => (
-        <div className="flex items-center gap-4">
-          <div className="w-16 h-10 rounded overflow-hidden relative border border-gray-100 shrink-0">
-             <img 
-               src={item.posterUrl || [
-                 "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=120&h=80&q=80&auto=format&fit=crop",
-                 "https://images.unsplash.com/photo-1509666537727-9154b6962292?w=120&h=80&q=80&auto=format&fit=crop",
-                 "https://images.unsplash.com/photo-1511067007398-7e4b90cfa4bc?w=120&h=80&q=80&auto=format&fit=crop"
-               ][item.id.length % 3]} 
-               alt={item.title} 
-               className="object-cover w-full h-full" 
-             />
-          </div>
-          <div>
-            <p className="font-bold text-gray-900 leading-tight">{item.title}</p>
-            <p className="text-[10px] font-bold text-[#E85D04] uppercase tracking-widest mt-1">{item.type}</p>
-          </div>
-        </div>
-      )
-    },
-    {
-      header: "Status",
-      accessorKey: "status",
-      cell: (item: any) => <StatusBadge status={item.status} type="tournament" />
-    },
-    {
-      header: "Location",
-      accessorKey: "location",
-      cell: (item: any) => (
-        <div className="flex items-center gap-2 text-gray-500">
-          <MapPin size={14} className="text-[#E85D04]" />
-          <span>{item.location}</span>
-        </div>
-      )
-    },
-    {
-      header: "Dates",
-      accessorKey: "startDate",
-      cell: (item: any) => (
-        <div className="flex flex-col">
-          <span className="text-gray-900">{format(new Date(item.startDate), "MMM d, yyyy")}</span>
-          <span className="text-[10px] text-gray-400 font-bold uppercase">Registration Ends {format(new Date(item.registrationDeadline), "MMM d")}</span>
-        </div>
-      )
-    },
-    {
-      header: "Entries",
-      accessorKey: "_count.applications",
-      cell: (item: any) => (
-        <div className="flex items-center gap-2">
-          <Users size={14} className="text-gray-400" />
-          <span className="font-bold text-gray-900">{item._count.applications}</span>
-          <span className="text-gray-400 text-xs">/ {item.maxParticipants || "∞"}</span>
-        </div>
-      )
-    },
-    {
-      header: "Actions",
-      accessorKey: "id",
-      cell: (item: any) => (
-        <div className="flex items-center gap-2">
-          <Link 
-            href={`/admin/tournaments/${item.id}/entries`}
-            className="p-2 hover:bg-[#E85D04]/10 rounded-xl text-gray-400 hover:text-[#E85D04] transition-all"
-            title="View Entries"
-          >
-            <Eye size={18} />
-          </Link>
-          <Link 
-            href={`/admin/tournaments/${item.id}/edit`}
-            className="p-2 hover:bg-blue-50 rounded-xl text-gray-400 hover:text-blue-600 transition-all"
-            title="Edit"
-          >
-            <Edit3 size={18} />
-          </Link>
-          <button 
-            className="p-2 hover:bg-red-50 rounded-xl text-gray-400 hover:text-red-600 transition-all"
-            title="Delete"
-          >
-            <Trash2 size={18} />
-          </button>
-        </div>
-      )
-    }
-  ]
 
   return (
     <div className="space-y-10">
@@ -209,12 +108,7 @@ export default async function AdminTournamentsPage() {
              Tournament Inventory
            </h3>
         </div>
-        <DataTable 
-          columns={columns} 
-          data={tournaments} 
-          searchKey="title"
-          searchPlaceholder="Search tournaments by name..."
-        />
+        <TournamentsTable tournaments={tournaments} />
       </div>
     </div>
   )
