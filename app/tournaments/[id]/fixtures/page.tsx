@@ -1,16 +1,12 @@
 import React from 'react';
-import { PrismaClient, MatchStatus } from '@prisma/client';
+import { MatchStatus } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import LiveFixturesBoard from '@/components/fixtures/LiveFixturesBoard';
-
-const prisma = new PrismaClient();
 
 export const dynamic = "force-dynamic";
 
 async function getFixtures(tournamentId: string) {
-  if (!process.env.DATABASE_URL) {
-    console.warn('DATABASE_URL not set – returning empty fixtures');
-    return { playingNow: [], upNext: [] };
-  }
+  if (!prisma) return { playingNow: [], upNext: [] };
 
   const [tableStatuses, upNext] = await Promise.all([
     prisma.tableStatus.findMany({
@@ -86,4 +82,3 @@ export default async function PublicFixturesPage({ params }: { params: Promise<{
     </div>
   );
 }
-

@@ -1,12 +1,12 @@
 import React from 'react';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import ScheduleGrid from '@/components/fixtures/ScheduleGrid';
-
-const prisma = new PrismaClient();
 
 export const dynamic = "force-dynamic";
 
 async function getScheduleData(tournamentId: string) {
+  if (!prisma) return { slots: [], startTime: new Date() };
+
   const [slots, tournament] = await Promise.all([
     prisma.matchSlot.findMany({
       where: { tournamentId },
@@ -50,4 +50,3 @@ export default async function TournamentSchedulePage({ params }: { params: Promi
     </div>
   );
 }
-

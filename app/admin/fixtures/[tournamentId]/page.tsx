@@ -1,12 +1,13 @@
 import React from 'react';
-import { PrismaClient, MatchStatus } from '@prisma/client';
+import { MatchStatus } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import AdminFixturesControl from '@/components/fixtures/AdminFixturesControl';
-
-const prisma = new PrismaClient();
 
 export const dynamic = "force-dynamic";
 
 async function getAdminData(tournamentId: string) {
+  if (!prisma) return { tables: [], upNext: [] };
+
   const [tableStatuses, upNext] = await Promise.all([
     prisma.tableStatus.findMany({
       where: { tournamentId },
@@ -65,4 +66,3 @@ export default async function AdminFixturePage({ params }: { params: Promise<{ t
     </div>
   );
 }
-
