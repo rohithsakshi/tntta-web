@@ -4,6 +4,8 @@ import LiveFixturesBoard from '@/components/fixtures/LiveFixturesBoard';
 
 const prisma = new PrismaClient();
 
+export const dynamic = "force-dynamic";
+
 async function getFixtures(tournamentId: string) {
   const [tableStatuses, upNext] = await Promise.all([
     prisma.tableStatus.findMany({

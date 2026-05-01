@@ -16,14 +16,18 @@ async function getBracketData(tournamentId: string, category?: string) {
   return data.rounds || [];
 }
 
+export const dynamic = "force-dynamic";
+
 export default async function TournamentBracketPage({ 
   params,
   searchParams 
 }: { 
-  params: { id: string },
-  searchParams: { category?: string }
+  params: Promise<{ id: string }>,
+  searchParams: Promise<{ category?: string }>
 }) {
-  const rounds = await getBracketData(params.id, searchParams.category);
+  const { id } = await params;
+  const { category } = await searchParams;
+  const rounds = await getBracketData(id, category);
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white p-6">
@@ -31,7 +35,7 @@ export default async function TournamentBracketPage({
         <header className="mb-10 flex justify-between items-center">
           <div>
             <h1 className="text-6xl font-['Bebas_Neue'] text-[#E85D04]">TOURNAMENT BRACKET</h1>
-            <p className="text-gray-400">Category: {searchParams.category || 'All Categories'}</p>
+            <p className="text-gray-400">Category: {category || 'All Categories'}</p>
           </div>
         </header>
 

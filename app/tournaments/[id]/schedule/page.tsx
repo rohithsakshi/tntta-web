@@ -4,6 +4,8 @@ import ScheduleGrid from '@/components/fixtures/ScheduleGrid';
 
 const prisma = new PrismaClient();
 
+export const dynamic = "force-dynamic";
+
 async function getScheduleData(tournamentId: string) {
   const [slots, tournament] = await Promise.all([
     prisma.matchSlot.findMany({

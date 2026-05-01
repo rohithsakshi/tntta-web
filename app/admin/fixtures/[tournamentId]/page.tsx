@@ -4,6 +4,8 @@ import AdminFixturesControl from '@/components/fixtures/AdminFixturesControl';
 
 const prisma = new PrismaClient();
 
+export const dynamic = "force-dynamic";
+
 async function getAdminData(tournamentId: string) {
   const [tableStatuses, upNext] = await Promise.all([
     prisma.tableStatus.findMany({
