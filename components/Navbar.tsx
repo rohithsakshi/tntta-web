@@ -90,25 +90,15 @@ export default function Navbar() {
             <div className="w-24 h-8 bg-gray-800 animate-pulse rounded" />
           ) : user ? (
             <div className="flex items-center gap-4">
-              {user.role === "ADMIN" ? (
-                <Link 
-                  href="/admin"
-                  className="bg-[#E85D04] text-white px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 hover:bg-[#C44D03] transition-all"
-                >
-                  <Settings size={14} />
-                  ADMIN PANEL
-                </Link>
-              ) : (
-                <Link 
-                  href="/dashboard"
-                  className="flex items-center gap-3 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-all"
-                >
-                  <div className="w-6 h-6 rounded-full bg-[#E85D04] flex items-center justify-center text-[10px] font-bold text-white">
-                    {user.firstName[0]}{user.lastName[0]}
-                  </div>
-                  <span className="text-sm text-white font-medium">Dashboard</span>
-                </Link>
-              )}
+              <Link 
+                href={user.role === "ADMIN" ? "/admin" : "/dashboard"}
+                className="flex items-center gap-3 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-full transition-all"
+              >
+                <div className="w-6 h-6 rounded-full bg-[#E85D04] flex items-center justify-center text-[10px] font-bold text-white shadow-lg shadow-[#E85D04]/20">
+                  {user.firstName[0]}{user.lastName[0]}
+                </div>
+                <span className="text-sm text-white font-medium">Dashboard</span>
+              </Link>
               <button 
                 onClick={() => signOut()}
                 className="text-gray-400 hover:text-white transition-colors"
@@ -189,8 +179,8 @@ export default function Navbar() {
                     href={user.role === "ADMIN" ? "/admin" : "/dashboard"}
                     className="w-full flex items-center justify-center gap-2 py-4 rounded-xl bg-white text-black font-bold"
                   >
-                    {user.role === "ADMIN" ? <Settings size={20} /> : <LayoutDashboard size={20} />}
-                    {user.role === "ADMIN" ? "Admin Panel" : "Dashboard"}
+                    <LayoutDashboard size={20} />
+                    Dashboard
                   </Link>
                   <button 
                     onClick={() => signOut()}

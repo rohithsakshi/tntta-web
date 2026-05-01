@@ -10,11 +10,17 @@ import {
   CreditCard, 
   BarChart3, 
   LogOut,
-  ChevronRight
+  ChevronRight,
+  Users,
+  Newspaper,
+  Image as ImageIcon,
+  Settings,
+  Calendar,
+  Target
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-const sidebarLinks = [
+const playerLinks = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { name: "My Profile", href: "/dashboard/profile", icon: User },
   { name: "My Tournaments", href: "/dashboard/tournaments", icon: Trophy },
@@ -22,11 +28,25 @@ const sidebarLinks = [
   { name: "Rankings", href: "/rankings", icon: BarChart3 },
 ]
 
+const adminLinks = [
+  { name: "Overview", href: "/admin", icon: LayoutDashboard },
+  { name: "Tournaments", href: "/admin/tournaments", icon: Trophy },
+  { name: "Players", href: "/admin/players", icon: Users },
+  { name: "Payments", href: "/admin/payments", icon: CreditCard },
+  { name: "Results", href: "/admin/results", icon: Target },
+  { name: "News", href: "/admin/news", icon: Newspaper },
+  { name: "Rankings", href: "/admin/rankings", icon: BarChart3 },
+  { name: "Gallery", href: "/admin/gallery", icon: ImageIcon },
+  { name: "Settings", href: "/admin/settings", icon: Settings },
+]
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession()
   const pathname = usePathname()
 
   if (!session) return null
+
+  const links = session.user.role === "ADMIN" ? adminLinks : playerLinks
 
   return (
     <div className="flex min-h-[calc(100vh-72px)] bg-gray-50">
@@ -39,14 +59,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </div>
             <div>
               <p className="text-white font-bold text-sm truncate w-32">{session.user.firstName} {session.user.lastName}</p>
-              <p className="text-[#E85D04] text-[10px] font-bold tracking-widest">{session.user.tnttaId}</p>
+              <p className="text-[#E85D04] text-[10px] font-bold tracking-widest">{session.user.tnttaId || (session.user.role === "ADMIN" ? "ADMINISTRATOR" : "")}</p>
             </div>
           </div>
         </div>
 
         <nav className="flex-1 p-6 space-y-2">
-          {sidebarLinks.map((link) => {
-            const isActive = pathname === link.href
+          {links.map((link) => {
+            const isActive = pathname === link.href || (link.href !== "/admin" && link.href !== "/dashboard" && pathname.startsWith(link.href))
             return (
               <Link 
                 key={link.name}
@@ -84,8 +104,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Mobile Bottom Nav */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-[#0A0A0A] border-t border-white/10 px-4 py-2 flex items-center justify-between z-40">
-        {sidebarLinks.slice(0, 4).map((link) => {
-          const isActive = pathname === link.href
+        {links.slice(0, 5).map((link) => {
+          const isActive = pathname === link.href || (link.href !== "/admin" && link.href !== "/dashboard" && pathname.startsWith(link.href))
           return (
             <Link 
               key={link.name}

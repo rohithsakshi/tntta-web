@@ -41,7 +41,9 @@ function LoginForm() {
         toast.error("Invalid contact number or password")
       } else {
         toast.success("Logged in successfully!")
-        router.push(callbackUrl)
+        const defaultRedirect = role === "ADMIN" ? "/admin" : "/"
+        const target = searchParams.get("callbackUrl") || defaultRedirect
+        router.push(target)
         router.refresh()
       }
     } catch (err) {
