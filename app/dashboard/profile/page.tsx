@@ -26,7 +26,8 @@ export default async function ProfilePage() {
       district: "Chennai",
       club: "Default Club",
       dob: new Date("2000-01-01"),
-      category: "MENS"
+      category: "MENS", // Keeping for compatibility in mock
+      categories: ["MENS"]
     }
   }
 
@@ -40,7 +41,7 @@ export default async function ProfilePage() {
     { label: "District", value: user.district, icon: MapPin },
     { label: "Club", value: user.club || "Unattached", icon: Building2 },
     { label: "Date of Birth", value: format(new Date(user.dob), "PPP"), icon: Calendar },
-    { label: "Default Category", value: user.category.replace("_", " "), icon: Trophy },
+    { label: "Default Category", value: (user.categories?.[0] || user.category || "MENS").replace("_", " "), icon: Trophy },
   ]
 
   return (

@@ -64,7 +64,45 @@ export default function TournamentsTable({ tournaments }: TournamentsTableProps)
     {
       header: "Status",
       accessorKey: "status",
-      cell: (item: any) => <StatusBadge status={item.status} type="tournament" />
+      cell: (item: any) => {
+        return (
+          <select
+            value={item.status}
+            onChange={async (e) => {
+              const newStatus = e.target.value
+              try {
+                const res = await fetch(`/api/admin/tournaments/${item.id}`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ status: newStatus })
+                })
+                if (!res.ok) throw new Error("Failed to update status")
+                toast.success("Status updated to " + newStatus)
+                router.refresh()
+              } catch (err) {
+                toast.error("Could not update status")
+              }
+            }}
+            className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-full outline-none transition-all cursor-pointer border-r-8 border-transparent ${
+              item.status === "OPEN" ? "bg-green-100 text-green-700" :
+              item.status === "DRAFT" ? "bg-gray-100 text-gray-700" :
+              item.status === "CLOSED" ? "bg-yellow-100 text-yellow-700" :
+              item.status === "ONGOING" ? "bg-blue-100 text-blue-700" :
+              item.status === "COMPLETED" ? "bg-indigo-100 text-indigo-700" :
+              item.status === "CANCELLED" ? "bg-red-100 text-red-700" :
+              "bg-gray-100 text-gray-700"
+            }`}
+          >
+            <option value="DRAFT">DRAFT</option>
+            <option value="UPCOMING">UPCOMING</option>
+            <option value="OPEN">OPEN</option>
+            <option value="ONGOING">ONGOING</option>
+            <option value="COMPLETED">COMPLETED</option>
+            <option value="CLOSED">CLOSED</option>
+            <option value="CANCELLED">CANCELLED</option>
+          </select>
+        )
+      }
     },
     {
       header: "Location",

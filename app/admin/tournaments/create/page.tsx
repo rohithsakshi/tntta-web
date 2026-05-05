@@ -15,6 +15,7 @@ import {
   Loader2
 } from "lucide-react"
 import Link from "next/link"
+import { toast } from "react-hot-toast"
 
 type TournamentType = "STATE_RANKING" | "DISTRICT_RANKING" | "STATE_CHAMPIONSHIP" | "INVITATIONAL" | "OPEN_TOURNAMENT"
 type Category = "MINI_CADET" | "CADET" | "SUB_JUNIOR" | "JUNIOR" | "SENIOR" | "MENS" | "VETERANS"
@@ -41,8 +42,8 @@ export default function CreateTournamentPage() {
     status: "DRAFT" as TournamentStatus
   })
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
     setLoading(true)
     setError("")
 
@@ -62,6 +63,7 @@ export default function CreateTournamentPage() {
         throw new Error(data.error || "Failed to create tournament")
       }
 
+      toast.success(formData.status === "DRAFT" ? "Saved as draft" : "Tournament published")
       router.push("/admin/tournaments")
       router.refresh()
     } catch (err: any) {
@@ -81,36 +83,18 @@ export default function CreateTournamentPage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto pb-20">
+    <div className="max-w-5xl mx-auto pb-20 px-4">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 sm:mb-10 gap-6">
-        <div className="flex items-center gap-4 sm:gap-6">
-          <Link 
-            href="/admin/tournaments"
-            className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-[#E85D04] transition-all shadow-sm shrink-0"
-          >
-            <ArrowLeft size={18} />
-          </Link>
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-bebas tracking-wider text-gray-900 uppercase leading-none mb-1 sm:mb-2">New Tournament</h1>
-            <p className="text-gray-500 font-dm-sans text-xs sm:text-sm">Configure event details, categories, and deadlines.</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-3 sm:gap-4">
-           <button 
-             onClick={() => setFormData(prev => ({ ...prev, status: "DRAFT" as TournamentStatus }))}
-             className="flex-1 md:flex-none px-4 sm:px-6 py-3 bg-white border border-gray-100 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all shadow-sm text-xs sm:text-sm"
-           >
-             SAVE AS DRAFT
-           </button>
-           <button 
-             onClick={handleSubmit}
-             disabled={loading}
-             className="flex-1 md:flex-none px-6 sm:px-8 py-3 bg-[#E85D04] text-white rounded-xl font-bold flex items-center justify-center gap-2 sm:gap-3 hover:bg-[#C44D03] transition-all shadow-lg shadow-[#E85D04]/20 disabled:opacity-50 text-xs sm:text-sm"
-           >
-             {loading ? <Loader2 className="animate-spin" size={16} /> : <Save size={16} />}
-             PUBLISH
-           </button>
+      <div className="flex items-center gap-6 mb-10">
+        <Link 
+          href="/admin/tournaments"
+          className="w-12 h-12 rounded-2xl bg-white border border-gray-100 flex items-center justify-center text-gray-400 hover:text-[#E85D04] transition-all shadow-sm shrink-0"
+        >
+          <ArrowLeft size={18} />
+        </Link>
+        <div>
+          <h1 className="text-4xl font-bebas tracking-wider text-gray-900 uppercase leading-none mb-2">New Tournament</h1>
+          <p className="text-gray-500 font-dm-sans text-sm">Configure event details and publish to the public calendar.</p>
         </div>
       </div>
 
@@ -123,8 +107,8 @@ export default function CreateTournamentPage() {
 
       <form onSubmit={handleSubmit} className="space-y-10">
         {/* Section 1: Basic Info */}
-        <div className="bg-white rounded-3xl sm:rounded-[40px] p-6 sm:p-10 border border-gray-100 shadow-sm">
-          <h3 className="text-lg sm:text-xl font-bebas tracking-wide text-gray-900 mb-6 sm:mb-8 flex items-center gap-3">
+        <div className="bg-white rounded-[40px] p-6 sm:p-10 border border-gray-100 shadow-sm">
+          <h3 className="text-xl font-bebas tracking-wide text-gray-900 mb-8 flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-orange-50 text-[#E85D04] flex items-center justify-center shrink-0">
               <Info size={16} />
             </div>
@@ -169,8 +153,8 @@ export default function CreateTournamentPage() {
         </div>
 
         {/* Section 2: Schedule */}
-        <div className="bg-white rounded-3xl sm:rounded-[40px] p-6 sm:p-10 border border-gray-100 shadow-sm">
-          <h3 className="text-lg sm:text-xl font-bebas tracking-wide text-gray-900 mb-6 sm:mb-8 flex items-center gap-3">
+        <div className="bg-white rounded-[40px] p-6 sm:p-10 border border-gray-100 shadow-sm">
+          <h3 className="text-xl font-bebas tracking-wide text-gray-900 mb-8 flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
               <Calendar size={16} />
             </div>
@@ -211,8 +195,8 @@ export default function CreateTournamentPage() {
         </div>
 
         {/* Section 3: Venue */}
-        <div className="bg-white rounded-3xl sm:rounded-[40px] p-6 sm:p-10 border border-gray-100 shadow-sm">
-          <h3 className="text-lg sm:text-xl font-bebas tracking-wide text-gray-900 mb-6 sm:mb-8 flex items-center gap-3">
+        <div className="bg-white rounded-[40px] p-6 sm:p-10 border border-gray-100 shadow-sm">
+          <h3 className="text-xl font-bebas tracking-wide text-gray-900 mb-8 flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center shrink-0">
               <MapPin size={16} />
             </div>
@@ -245,8 +229,8 @@ export default function CreateTournamentPage() {
         </div>
 
         {/* Section 4: Categories */}
-        <div className="bg-white rounded-3xl sm:rounded-[40px] p-6 sm:p-10 border border-gray-100 shadow-sm">
-          <h3 className="text-lg sm:text-xl font-bebas tracking-wide text-gray-900 mb-6 sm:mb-8 flex items-center gap-3">
+        <div className="bg-white rounded-[40px] p-6 sm:p-10 border border-gray-100 shadow-sm">
+          <h3 className="text-xl font-bebas tracking-wide text-gray-900 mb-8 flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
               <Trophy size={16} />
             </div>
@@ -272,8 +256,8 @@ export default function CreateTournamentPage() {
         </div>
 
         {/* Section 5: Registration Settings */}
-        <div className="bg-white rounded-3xl sm:rounded-[40px] p-6 sm:p-10 border border-gray-100 shadow-sm">
-          <h3 className="text-lg sm:text-xl font-bebas tracking-wide text-gray-900 mb-6 sm:mb-8 flex items-center gap-3">
+        <div className="bg-white rounded-[40px] p-6 sm:p-10 border border-gray-100 shadow-sm">
+          <h3 className="text-xl font-bebas tracking-wide text-gray-900 mb-8 flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gray-900 text-white flex items-center justify-center shrink-0">
               <Settings size={16} />
             </div>
@@ -303,22 +287,37 @@ export default function CreateTournamentPage() {
           </div>
         </div>
 
-        {/* Submit */}
-        <div className="flex flex-col sm:flex-row justify-end gap-4 sm:gap-6 pt-6 sm:pt-10">
+        {/* Submit Buttons at the bottom */}
+        <div className="flex flex-wrap items-center justify-end gap-4 pt-10 border-t border-gray-100">
            <button 
              type="button"
              onClick={() => router.back()}
-             className="order-2 sm:order-1 px-10 py-4 sm:py-5 bg-gray-50 text-gray-500 rounded-2xl sm:rounded-3xl font-bold hover:bg-gray-100 transition-all text-sm"
+             className="px-8 py-4 bg-gray-50 text-gray-500 rounded-2xl font-bold hover:bg-gray-100 transition-all text-sm"
            >
              CANCEL
            </button>
+           
+           <button 
+             type="button"
+             disabled={loading}
+             onClick={() => {
+               setFormData(prev => ({ ...prev, status: "DRAFT" }))
+               setTimeout(() => handleSubmit(), 100) // Small delay to let state settle
+             }}
+             className="px-8 py-4 bg-white border border-gray-200 text-gray-700 rounded-2xl font-bold hover:bg-gray-50 transition-all text-sm shadow-sm flex items-center gap-2"
+           >
+             {loading ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
+             SAVE AS DRAFT
+           </button>
+
            <button 
              type="submit"
              disabled={loading}
-             className="order-1 sm:order-2 px-16 py-4 sm:py-5 bg-gray-900 text-white rounded-2xl sm:rounded-3xl font-bold flex items-center justify-center gap-4 hover:bg-black transition-all shadow-2xl disabled:opacity-50 text-sm"
+             onClick={() => setFormData(prev => ({ ...prev, status: "UPCOMING" }))}
+             className="px-12 py-4 bg-[#E85D04] text-white rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-[#C44D03] transition-all shadow-xl shadow-[#E85D04]/20 disabled:opacity-50 text-sm"
            >
-             {loading ? <Loader2 className="animate-spin" size={24} /> : <CheckCircle2 size={24} />}
-             CREATE TOURNAMENT
+             {loading ? <Loader2 className="animate-spin" size={20} /> : <CheckCircle2 size={20} />}
+             PUBLISH TOURNAMENT
            </button>
         </div>
       </form>

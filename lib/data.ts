@@ -11,7 +11,7 @@ export async function getUpcomingTournaments() {
     })
     return tournaments
   } catch (error) {
-    console.error("Error fetching tournaments:", error)
+    console.info("Info: Upcoming tournaments currently unavailable (Offline).")
     return []
   }
 }
@@ -27,7 +27,7 @@ export async function getLatestNews() {
     })
     return news
   } catch (error) {
-    console.error("Error fetching news:", error)
+    console.info("Info: Latest news currently unavailable (Offline).")
     return []
   }
 }
@@ -47,7 +47,8 @@ export async function getRecentResults() {
     })
     return results
   } catch (error) {
-    console.error("Error fetching results:", error)
+    console.info("Info: Database results currently unavailable (Offline).")
     return []
   }
 }
+

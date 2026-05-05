@@ -19,13 +19,19 @@ import NewsTable from "./NewsTable"
 export const dynamic = "force-dynamic"
 
 async function getNewsData() {
-  const news = await prisma.newsItem.findMany({
-    orderBy: { publishedAt: "desc" },
-    include: {
-      author: true
-    }
-  })
-  return news
+  try {
+    if (!prisma) return []
+    const news = await prisma.newsItem.findMany({
+      orderBy: { publishedAt: "desc" },
+      include: {
+        author: true
+      }
+    })
+    return news
+  } catch (error) {
+    console.warn("News data fetch failed:", error)
+    return []
+  }
 }
 
 export default async function AdminNewsPage() {

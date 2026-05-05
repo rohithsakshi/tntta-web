@@ -14,7 +14,7 @@ async function getTournaments() {
     })
     return tournaments
   } catch (error) {
-    console.error("Error fetching completed tournaments:", error)
+    console.warn("Error fetching completed tournaments (DB offline):", error)
     return []
   }
 }
@@ -32,7 +32,7 @@ async function getMatchResults(tournamentId: string) {
     })
     return results
   } catch (error) {
-    console.error("Error fetching match results:", error)
+    console.warn("Error fetching match results (DB offline):", error)
     return []
   }
 }

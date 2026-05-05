@@ -12,13 +12,7 @@ export async function POST(req: Request) {
       );
     }
 
-    /* ---------------------------
-       Simulate Real Gateway Delay
-       5 Seconds Processing
-    --------------------------- */
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-
-    // Generate fake transaction ID
+    // Simulate Real Gateway Bypass
     const transactionId = "TXN_" + Date.now();
 
     return NextResponse.json({

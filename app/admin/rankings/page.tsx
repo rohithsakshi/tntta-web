@@ -14,9 +14,11 @@ import StatsCard from "@/components/admin/StatsCard"
 export const dynamic = "force-dynamic"
 
 async function getRankingStats() {
-  const currentSeason = "2025-26" // Should be dynamic
+  const currentSeason = "2025-26"
   
   try {
+    if (!prisma) throw new Error("Database connection not established")
+    
     const [totalRanked, categories] = await Promise.all([
       prisma.rankingEntry.count({ where: { season: currentSeason } }),
       prisma.rankingEntry.groupBy({
@@ -28,7 +30,7 @@ async function getRankingStats() {
 
     return { totalRanked, categories, currentSeason }
   } catch (error) {
-    console.error("Error fetching ranking stats:", error)
+    console.warn("Ranking stats fetch failed:", error)
     return { totalRanked: 0, categories: [], currentSeason }
   }
 }

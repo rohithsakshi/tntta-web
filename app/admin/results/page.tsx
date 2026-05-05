@@ -15,21 +15,27 @@ import StatusBadge from "@/components/admin/StatusBadge"
 export const dynamic = "force-dynamic"
 
 async function getTournamentsWithResultStats() {
-  const tournaments = await prisma.tournament.findMany({
-    where: {
-      status: { in: ["ONGOING", "COMPLETED"] }
-    },
-    include: {
-      _count: {
-        select: { 
-          matches: true,
-          applications: true
+  try {
+    if (!prisma) return []
+    const tournaments = await prisma.tournament.findMany({
+      where: {
+        status: { in: ["ONGOING", "COMPLETED"] }
+      },
+      include: {
+        _count: {
+          select: { 
+            matches: true,
+            applications: true
+          }
         }
-      }
-    },
-    orderBy: { startDate: "desc" }
-  })
-  return tournaments
+      },
+      orderBy: { startDate: "desc" }
+    })
+    return tournaments
+  } catch (error) {
+    console.warn("Results tournaments fetch failed:", error)
+    return []
+  }
 }
 
 export default async function AdminResultsPage() {

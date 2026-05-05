@@ -41,8 +41,19 @@ const adminLinks = [
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const pathname = usePathname()
+
+  if (status === "loading") {
+    return (
+      <div className="flex min-h-[calc(100vh-72px)] bg-gray-50 items-center justify-center">
+        <div className="text-center">
+          <div className="w-10 h-10 border-4 border-[#E85D04] border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-500 text-sm font-medium">Authenticating...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!session) return null
 

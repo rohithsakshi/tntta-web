@@ -14,14 +14,20 @@ import StatsCard from "@/components/admin/StatsCard"
 export const dynamic = "force-dynamic"
 
 async function getGalleryData() {
-  const images = await prisma.galleryImage.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      tournament: true,
-      uploadedBy: true
-    }
-  })
-  return images
+  try {
+    if (!prisma) return []
+    const images = await prisma.galleryImage.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        tournament: true,
+        uploadedBy: true
+      }
+    })
+    return images
+  } catch (error) {
+    console.warn("Gallery data fetch failed:", error)
+    return []
+  }
 }
 
 export default async function AdminGalleryPage() {

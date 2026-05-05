@@ -11,7 +11,7 @@ export const playerRegistrationSchema = z.object({
   dob: z.string().transform((val) => new Date(val)),
   district: z.string().min(1, "District is required"),
   club: z.string().optional(),
-  category: z.enum(["MINI_CADET", "CADET", "SUB_JUNIOR", "JUNIOR", "SENIOR", "MENS", "VETERANS"]),
+  categories: z.array(z.enum(["MINI_CADET", "CADET", "SUB_JUNIOR", "JUNIOR", "SENIOR", "MENS", "VETERANS"])).min(1, "Select at least one category"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],

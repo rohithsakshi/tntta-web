@@ -193,7 +193,7 @@ model User {
   dob           DateTime
   district      String
   club          String?
-  category      Category
+  categories    Category[]
   role          UserRole  @default(PLAYER)
   profilePhoto  String?
   rankingPoints Int       @default(0)

@@ -57,7 +57,7 @@ export default function RegisterPage() {
     dob: "",
     district: "",
     club: "",
-    category: "" as Category | "",
+    categories: [] as Category[],
   })
 
   const [eligibleCategories, setEligibleCategories] = useState<typeof categories>([])
@@ -69,16 +69,17 @@ export default function RegisterPage() {
       const eligible = categories.filter(c => age >= c.minAge && age <= c.maxAge)
       setEligibleCategories(eligible)
       
-      // Auto-select first eligible category if current selection is not eligible
-      if (formData.category && !eligible.find(c => c.id === formData.category)) {
-        setFormData(prev => ({ ...prev, category: "" }))
-      }
+      // Filter out categories that are no longer eligible
+      setFormData(prev => ({ 
+        ...prev, 
+        categories: prev.categories.filter(id => eligible.find(c => c.id === id))
+      }))
     }
   }, [formData.dob])
 
   const handleNext = () => {
     // Basic validation for Step 1
-    if (!formData.firstName || !formData.lastName || !formData.contact || !formData.dob || !formData.district || !formData.category || !formData.password) {
+    if (!formData.firstName || !formData.lastName || !formData.contact || !formData.dob || !formData.district || formData.categories.length === 0 || !formData.password) {
       toast.error("Please fill all required fields")
       return
     }
@@ -244,9 +245,16 @@ export default function RegisterPage() {
                       <button
                         key={c.id}
                         type="button"
-                        onClick={() => setFormData({ ...formData, category: c.id })}
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            categories: prev.categories.includes(c.id)
+                              ? prev.categories.filter(id => id !== c.id)
+                              : [...prev.categories, c.id]
+                          }))
+                        }}
                         className={`px-4 py-2 rounded-lg text-xs font-bold transition-all border ${
-                          formData.category === c.id 
+                          formData.categories.includes(c.id) 
                           ? "bg-[#0077B6] border-[#0077B6] text-white shadow-md" 
                           : "bg-white border-gray-200 text-gray-600 hover:border-gray-300"
                         }`}
@@ -350,8 +358,8 @@ export default function RegisterPage() {
                   <p className="text-lg font-bold text-gray-900">{formData.dob}</p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Category</p>
-                  <p className="text-lg font-bold text-gray-900">{formData.category.replace("_", " ")}</p>
+                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Categories</p>
+                  <p className="text-sm font-bold text-gray-900">{formData.categories.map(c => c.replace("_", " ")).join(", ")}</p>
                 </div>
                 <div>
                   <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">District</p>

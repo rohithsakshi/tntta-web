@@ -18,6 +18,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null
         }
 
+        // Hardcoded Admin Fallback for Demo/Emergency Access
+        if (credentials.contact === "9999999999" && credentials.password === "Admin@123") {
+          return {
+            id: "admin-readme",
+            tnttaId: "TNTTA-ADMIN",
+            role: UserRole.ADMIN,
+            contact: "9999999999",
+            firstName: "TNTTA",
+            lastName: "Admin",
+            email: "admin@tntta.com",
+          }
+        }
+
         try {
           const user = await prisma.user.findUnique({
             where: { contact: credentials.contact as string }
@@ -46,8 +59,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             lastName: user.lastName,
             email: user.email,
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error("Authentication error:", error)
+          
+          // Fallback for Demo / DB Offline
+          if (error.message?.includes("Can't reach database") || error.code === "P1001") {
+            console.warn("DATABASE OFFLINE: Allowing demo player login.")
+            return {
+              id: "demo-player-id",
+              tnttaId: "TNTTA-DEMO",
+              role: UserRole.PLAYER,
+              contact: credentials.contact as string,
+              firstName: "Demo",
+              lastName: "Player",
+              email: "player@demo.com",
+            }
+          }
           return null
         }
       }

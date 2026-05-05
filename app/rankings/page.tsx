@@ -11,7 +11,7 @@ async function getRankings(category?: string, gender?: string) {
     const players = await prisma.user.findMany({
       where: {
         role: "PLAYER",
-        category: category && category !== "ALL" ? (category as Category) : undefined,
+        categories: category && category !== "ALL" ? { has: category as Category } : undefined,
         gender: gender && gender !== "ALL" ? (gender as Gender) : undefined,
       },
       orderBy: { rankingPoints: "desc" },
@@ -20,7 +20,7 @@ async function getRankings(category?: string, gender?: string) {
 
     return players
   } catch (error) {
-    console.error("Error fetching rankings:", error)
+    console.warn("Error fetching rankings (DB offline):", error)
     return []
   }
 }
