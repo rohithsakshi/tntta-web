@@ -197,6 +197,7 @@ model User {
   role          UserRole  @default(PLAYER)
   profilePhoto  String?
   rankingPoints Int       @default(0)
+  isFeatured    Boolean   @default(false)
   isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

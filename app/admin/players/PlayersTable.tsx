@@ -69,23 +69,51 @@ export default function PlayersTable({ players }: PlayersTableProps) {
     {
       header: "Actions",
       accessorKey: "id",
-      cell: (item: any) => (
-        <div className="flex items-center gap-2">
-          <Link 
-            href={`/admin/players/${item.id}`}
-            className="p-2 hover:bg-gray-100 rounded-xl text-gray-400 hover:text-gray-900 transition-all"
-            title="View Profile"
-          >
-            <Eye size={18} />
-          </Link>
-          <button 
-            className="p-2 hover:bg-red-50 rounded-xl text-gray-400 hover:text-red-600 transition-all"
-            title="Deactivate"
-          >
-            <UserMinus size={18} />
-          </button>
-        </div>
-      )
+      cell: (item: any) => {
+        const toggleFeatured = async () => {
+          try {
+            const res = await fetch(`/api/admin/players/${item.id}/feature`, {
+              method: "PATCH",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ isFeatured: !item.isFeatured }),
+            });
+            if (res.ok) {
+              window.location.reload();
+            }
+          } catch (error) {
+            console.error("Failed to toggle featured status");
+          }
+        };
+
+        return (
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={toggleFeatured}
+              className={`p-2 rounded-xl transition-all ${
+                item.isFeatured 
+                ? "bg-yellow-50 text-yellow-600 hover:bg-yellow-100" 
+                : "text-gray-400 hover:bg-gray-100 hover:text-gray-900"
+              }`}
+              title={item.isFeatured ? "Unfeature Player" : "Feature Player"}
+            >
+              <Trophy size={18} className={item.isFeatured ? "fill-yellow-600" : ""} />
+            </button>
+            <Link 
+              href={`/admin/players/${item.id}`}
+              className="p-2 hover:bg-gray-100 rounded-xl text-gray-400 hover:text-gray-900 transition-all"
+              title="View Profile"
+            >
+              <Eye size={18} />
+            </Link>
+            <button 
+              className="p-2 hover:bg-red-50 rounded-xl text-gray-400 hover:text-red-600 transition-all"
+              title="Deactivate"
+            >
+              <UserMinus size={18} />
+            </button>
+          </div>
+        )
+      }
     }
   ]
 

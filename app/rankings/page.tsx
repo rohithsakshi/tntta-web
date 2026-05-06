@@ -52,7 +52,13 @@ export default async function RankingsPage({
       <div className="bg-[#0A0A0A] text-white py-20 relative overflow-hidden">
         <div className="absolute inset-0 opacity-20 bg-[url('/image1.jpg')] bg-cover bg-center" />
         <div className="container mx-auto px-4 lg:px-8 relative z-10">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bebas tracking-wider mb-4 uppercase">Player Rankings</h1>
+          <div className="flex items-center gap-3 mb-4">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl font-bebas tracking-wider uppercase">Player Rankings</h1>
+            <div className="bg-green-500/20 backdrop-blur-md border border-green-500/30 px-3 py-1 rounded-full flex items-center gap-2">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span className="text-[10px] font-bold text-green-500 uppercase tracking-widest">Live Sync</span>
+            </div>
+          </div>
           <p className="text-lg sm:text-xl text-gray-400 font-dm-sans max-w-2xl">
             Official TNTTA State Rankings for the 2025-26 Season.
           </p>

@@ -3,6 +3,7 @@ import Image from "next/image"
 import { Calendar, MapPin, ChevronRight, Trophy } from "lucide-react"
 import { format } from "date-fns"
 import { getUpcomingTournaments } from "@/lib/data"
+import { cn } from "@/lib/utils"
 
 export default async function Tournaments() {
   const tournaments = await getUpcomingTournaments()
@@ -50,8 +51,11 @@ export default async function Tournaments() {
 
                 <div className="p-8 relative -mt-16">
                   <div className="flex justify-between items-start mb-4">
-                    <div className="bg-[#E85D04] text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg">
-                      ENTRY OPEN
+                    <div className={cn(
+                      "px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-lg",
+                      tournament.status === "ONGOING" ? "bg-red-600 animate-pulse text-white" : "bg-[#E85D04] text-white"
+                    )}>
+                      {tournament.status === "ONGOING" ? "LIVE NOW" : "ENTRY OPEN"}
                     </div>
                     <Trophy className="text-white group-hover:text-[#E85D04] transition-colors" size={24} />
                   </div>

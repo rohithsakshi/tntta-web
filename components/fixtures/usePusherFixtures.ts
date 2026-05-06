@@ -1,16 +1,14 @@
 import { useState, useEffect } from 'react';
-import PusherJs from 'pusher-js';
+import { pusherClient } from '@/lib/pusher-client';
 
 export function usePusherFixtures(tournamentId: string) {
   const [tables, setTables] = useState<any[]>([]);
   const [upNext, setUpNext] = useState<any[]>([]);
 
   useEffect(() => {
-    const pusher = new PusherJs(process.env.NEXT_PUBLIC_PUSHER_KEY!, {
-      cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER!,
-    });
+    if (!pusherClient) return;
 
-    const channel = pusher.subscribe(`tournament-${tournamentId}-fixtures`);
+    const channel = pusherClient.subscribe(`tournament-${tournamentId}-fixtures`);
 
     channel.bind('match.started', (data: any) => {
       setTables(prev => prev.map(t => 
@@ -44,7 +42,7 @@ export function usePusherFixtures(tournamentId: string) {
     });
 
     return () => {
-      pusher.unsubscribe(`tournament-${tournamentId}-fixtures`);
+      pusherClient.unsubscribe(`tournament-${tournamentId}-fixtures`);
     };
   }, [tournamentId]);
 

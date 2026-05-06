@@ -9,7 +9,9 @@ export const dynamic = "force-dynamic"
 async function getTournaments() {
   try {
     const tournaments = await prisma.tournament.findMany({
-      where: { status: "COMPLETED" },
+      where: { 
+        status: { in: ["COMPLETED", "ONGOING"] } 
+      },
       orderBy: { startDate: "desc" },
     })
     return tournaments
@@ -115,8 +117,10 @@ export default async function ResultsPage({
                       <div className="bg-gray-50 px-6 py-3 border-b border-gray-100 flex justify-between items-center">
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{match.round}</span>
                         <div className="flex items-center gap-2">
-                           <Trophy size={14} className="text-[#2D6A4F]" />
-                           <span className="text-[10px] font-bold text-[#2D6A4F] uppercase tracking-widest">FINAL RESULT</span>
+                           <div className={`w-1.5 h-1.5 rounded-full ${match.tournament.status === 'ONGOING' ? 'bg-red-500 animate-pulse' : 'bg-[#2D6A4F]'}`} />
+                           <span className={`text-[10px] font-bold uppercase tracking-widest ${match.tournament.status === 'ONGOING' ? 'text-red-500' : 'text-[#2D6A4F]'}`}>
+                             {match.tournament.status === 'ONGOING' ? 'LIVE UPDATE' : 'FINAL RESULT'}
+                           </span>
                         </div>
                       </div>
                       
