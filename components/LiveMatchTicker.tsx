@@ -26,7 +26,7 @@ export default function LiveMatchTicker() {
     })
 
     return () => {
-      pusherClient.unsubscribe('global-live-updates')
+      pusherClient?.unsubscribe('global-live-updates')
     }
   }, [])
 

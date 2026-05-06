@@ -9,7 +9,7 @@ export default async function PlayersShowcase() {
   
   // Combine and deduplicate
   const allShown = [...featured]
-  winners.forEach(w => {
+  winners.forEach((w: any) => {
     if (!allShown.find(p => p.id === w.id)) {
       allShown.push({ ...w, isWinner: true })
     } else {

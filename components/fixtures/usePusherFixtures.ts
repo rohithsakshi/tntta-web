@@ -42,7 +42,7 @@ export function usePusherFixtures(tournamentId: string) {
     });
 
     return () => {
-      pusherClient.unsubscribe(`tournament-${tournamentId}-fixtures`);
+      pusherClient?.unsubscribe(`tournament-${tournamentId}-fixtures`);
     };
   }, [tournamentId]);
 
