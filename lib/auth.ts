@@ -32,6 +32,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         try {
+          if (!prisma) {
+            throw new Error("Can't reach database (Prisma not initialized)")
+          }
+
           const user = await prisma.user.findUnique({
             where: { contact: credentials.contact as string }
           })
@@ -110,7 +114,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: {
     strategy: "jwt",
   },
-  secret: process.env.AUTH_SECRET,
+  secret: process.env.AUTH_SECRET || "e9a9c9b9d9e9f9a9b9c9d9e9f9a9b9c9", // Fallback for demo
 })
 
 export const getCurrentUser = async () => {

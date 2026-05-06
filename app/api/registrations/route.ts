@@ -6,6 +6,10 @@ import { UserRole } from "@prisma/client"
 
 export async function POST(req: Request) {
   try {
+    if (!prisma) {
+      throw new Error("Can't reach database (Prisma not initialized)")
+    }
+
     const body = await req.json()
     const validatedData = playerRegistrationSchema.parse(body)
 
