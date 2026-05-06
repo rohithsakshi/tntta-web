@@ -44,7 +44,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
       return NextResponse.json({ error: "Not Found" }, { status: 404 })
     }
     return NextResponse.json(tournament)
-  } catch (error) {
+  } catch (_error) {
     if (id.includes("demo")) {
        return NextResponse.json({ id, title: "Demo Tournament", status: "DRAFT" })
     }
@@ -76,11 +76,12 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     })
 
     return NextResponse.json(tournament)
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error as { message?: string };
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 })
     }
-    if (error.message?.includes("Can't reach database") || id.includes("demo")) {
+    if (err.message?.includes("Can't reach database") || id.includes("demo")) {
       return NextResponse.json({ id, message: "Updated (Demo Mode)" })
     }
     console.error("Tournament update error:", error)
@@ -108,8 +109,9 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
 
     await prisma.tournament.delete({ where: { id } })
     return NextResponse.json({ message: "Deleted successfully" })
-  } catch (error: any) {
-    if (error.message?.includes("Can't reach database") || id.includes("demo")) {
+  } catch (error: unknown) {
+    const err = error as { message?: string };
+    if (err.message?.includes("Can't reach database") || id.includes("demo")) {
       return NextResponse.json({ message: "Deleted successfully (Demo Mode)" })
     }
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
@@ -137,8 +139,9 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
     })
 
     return NextResponse.json(tournament)
-  } catch (error: any) {
-    if (error.message?.includes("Can't reach database") || id.includes("demo")) {
+  } catch (error: unknown) {
+    const err = error as { message?: string };
+    if (err.message?.includes("Can't reach database") || id.includes("demo")) {
       return NextResponse.json({ id, status: "UPDATED", message: "Status updated (Demo Mode)" })
     }
     console.error("Tournament patch error:", error)

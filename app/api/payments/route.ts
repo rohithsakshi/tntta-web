@@ -23,7 +23,7 @@ export async function POST(req: Request) {
       paidAt: new Date().toISOString(),
     });
 
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json(
       { error: "Payment processing failed" },
       { status: 500 }

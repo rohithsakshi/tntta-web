@@ -1,4 +1,5 @@
 import prisma from "./prisma"
+import type { User as PrismaUser } from "@prisma/client"
 
 export async function getUpcomingTournaments() {
   if (!prisma) return []
@@ -127,7 +128,7 @@ export async function getTournamentWinners() {
         winner: true,
       },
     })
-    return winners.map(w => w.winner)
+    return winners.map((w: { winner: PrismaUser }) => w.winner)
   } catch (error) {
     console.info("Info: Tournament winners currently unavailable (Offline).")
     return []

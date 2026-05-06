@@ -2,6 +2,7 @@ import { User, Search, MapPin, Trophy } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 import prisma from "@/lib/prisma"
+import type { User as PrismaUser } from "@prisma/client"
 
 export const dynamic = "force-dynamic"
 
@@ -58,7 +59,7 @@ export default async function PlayersPage() {
         {/* Players Grid */}
         {players.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
-            {players.map((player: any) => (
+            {players.map((player: PrismaUser) => (
               <div 
                 key={player.id}
                 className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden group hover:-translate-y-2 transition-all duration-300"

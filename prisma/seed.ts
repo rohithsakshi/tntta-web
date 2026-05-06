@@ -24,7 +24,7 @@ async function main() {
       gender: 'MALE',
       dob: new Date('1980-01-01'),
       district: 'Chennai',
-      category: 'SENIOR',
+      categories: ['SENIOR'],
       role: 'ADMIN',
     },
   })
@@ -45,7 +45,7 @@ async function main() {
         gender: i % 2 === 0 ? 'FEMALE' : 'MALE',
         dob: new Date(2000 + i, 0, 1),
         district: i % 2 === 0 ? 'Coimbatore' : 'Madurai',
-        category: 'SENIOR',
+        categories: ['SENIOR'],
         role: 'PLAYER',
         rankingPoints: 100 + i * 10,
       },
