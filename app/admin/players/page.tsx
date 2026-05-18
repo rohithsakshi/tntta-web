@@ -1,4 +1,5 @@
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { User } from "@/models"
 import { 
   Users, 
   Search, 
@@ -22,22 +23,27 @@ export const dynamic = "force-dynamic"
 
 async function getPlayers() {
   try {
-    const [players, stats] = await Promise.all([
-      prisma.user.findMany({
-        where: { role: "PLAYER" },
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.user.count({ where: { role: "PLAYER" } }),
+    await connectToDatabase();
+    
+    const [playersRaw, total] = await Promise.all([
+      User.find({ role: "PLAYER" })
+        .sort({ createdAt: -1 })
+        .lean(),
+      User.countDocuments({ role: "PLAYER" }),
     ])
 
-    const districtStats = await prisma.user.groupBy({
-      by: ["district"],
-      where: { role: "PLAYER" },
-      _count: true
-    })
+    const districtStatsRaw = await User.aggregate([
+      { $match: { role: "PLAYER" } },
+      { $group: { _id: "$district", count: { $sum: 1 } } }
+    ]);
 
-    if (players.length === 0) throw new Error("No players")
-    return { players, total: stats, districtStats }
+    const districtStats = districtStatsRaw.map(d => ({ district: d._id, _count: d.count }));
+
+    if (playersRaw.length === 0) throw new Error("No players")
+    
+    const players = playersRaw.map((p: any) => ({ ...p, id: p._id.toString() }));
+
+    return { players, total, districtStats }
   } catch (error) {
     console.info("Info: Player data fetch currently offline.")
     return { 

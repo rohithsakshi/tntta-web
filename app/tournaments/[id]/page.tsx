@@ -4,26 +4,36 @@ import Link from "next/link"
 import { Calendar, MapPin, Trophy, Users, Clock, Info, ChevronRight, FileText } from "lucide-react"
 import { format } from "date-fns"
 import GoogleMap from "@/components/GoogleMap"
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { Tournament, TournamentApplication } from "@/models"
 
 export const dynamic = "force-dynamic"
 
 async function getTournament(slug: string) {
   try {
-    return await prisma.tournament.findUnique({
-      where: { slug },
-      include: {
-        _count: {
-          select: { applications: true }
-        },
-        applications: {
-          include: {
-            player: true
-          },
-          take: 10
-        }
-      }
-    })
+    await connectToDatabase();
+    const tournament = await Tournament.findOne({ slug }).lean();
+    
+    if (!tournament) return null;
+
+    const id = (tournament as any)._id;
+    const appCount = await TournamentApplication.countDocuments({ tournamentId: id });
+    const recentApps = await TournamentApplication.find({ tournamentId: id })
+      .sort({ appliedAt: -1 })
+      .limit(10)
+      .populate("playerId")
+      .lean();
+
+    return {
+      ...tournament,
+      id: id.toString(),
+      _count: { applications: appCount },
+      applications: recentApps.map((app: any) => ({
+        ...app,
+        id: app._id.toString(),
+        player: app.playerId
+      }))
+    };
   } catch (error) {
     console.info("Using mock tournament data (Database offline)")
     return {
@@ -34,10 +44,12 @@ async function getTournament(slug: string) {
       startDate: new Date("2025-06-15"),
       endDate: new Date("2025-06-18"),
       registrationDeadline: new Date("2025-06-10"),
+      registrationOpens: new Date("2025-05-01"),
       venue: "Nehru Indoor Stadium",
       location: "Chennai",
       entryFee: 50000,
       status: "OPEN",
+      type: "STATE_RANKING",
       categories: ["MENS", "WOMENS", "U19_BOYS", "U19_GIRLS"],
       posterUrl: "https://images.unsplash.com/photo-1534158914592-062992fbe900?w=1600&h=900&q=90",
       _count: { applications: 42 },
@@ -70,11 +82,7 @@ export default async function TournamentDetailPage({ params }: { params: Promise
       {/* Hero Banner */}
       <div className="relative h-[400px] w-full overflow-hidden">
         <Image 
-          src={tournament.posterUrl || [
-            "/image1.jpg",
-            "/image2.jpg",
-            "/image3.jpg"
-          ][tournament.id.length % 3]} 
+          src={tournament.posterUrl || "/image1.jpg"} 
           alt={tournament.title} 
           fill 
           className="object-cover"

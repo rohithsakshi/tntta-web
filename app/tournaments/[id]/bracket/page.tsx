@@ -1,21 +1,25 @@
 import React from 'react';
-import prisma from '@/lib/prisma';
+import connectToDatabase from '@/lib/mongodb';
+import { TournamentBracket } from '@/models';
 import BracketView from '@/components/fixtures/BracketView';
 
 export const dynamic = "force-dynamic";
 
 async function getBracketData(tournamentId: string, category?: string) {
-  if (!prisma) return [];
+  try {
+    await connectToDatabase();
 
-  const bracket = await prisma.tournamentBracket.findUnique({
-    where: { tournamentId },
-  });
+    const bracket = await TournamentBracket.findOne({ tournamentId }).lean();
 
-  if (!bracket) return null;
+    if (!bracket) return null;
 
-  // bracketData is stored as JSON in the schema
-  const data = bracket.bracketData as any;
-  return data.rounds || [];
+    // bracketData is stored as mixed type in Mongoose
+    const data = bracket.bracketData as any;
+    return data.rounds || [];
+  } catch (error) {
+    console.error("Error fetching bracket:", error);
+    return [];
+  }
 }
 
 export default async function TournamentBracketPage({ 

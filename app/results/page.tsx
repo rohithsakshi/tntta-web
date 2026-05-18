@@ -1,20 +1,25 @@
 import { Trophy, ChevronRight, Calendar, Search, MapPin } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { Tournament, MatchResult, MatchSlot } from "@/models"
 
 export const dynamic = "force-dynamic"
 
 
 async function getTournaments() {
   try {
-    const tournaments = await prisma.tournament.findMany({
-      where: { 
-        status: { in: ["COMPLETED", "ONGOING"] } 
-      },
-      orderBy: { startDate: "desc" },
+    await connectToDatabase();
+    const tournaments = await Tournament.find({ 
+      status: { $in: ["COMPLETED", "ONGOING"] } 
     })
-    return tournaments
+    .sort({ startDate: -1 })
+    .lean();
+    
+    return tournaments.map((t: any) => ({
+      ...t,
+      id: t._id.toString()
+    }));
   } catch (error) {
     console.warn("Error fetching completed tournaments (DB offline):", error)
     return []
@@ -23,15 +28,41 @@ async function getTournaments() {
 
 async function getMatchResults(tournamentId: string) {
   try {
-    const results = await prisma.matchResult.findMany({
-      where: { tournamentId },
-      include: {
-        player1: true,
-        player2: true,
-        tournament: true,
-      },
-      orderBy: [{ category: "asc" }, { playedAt: "desc" }],
-    })
+    await connectToDatabase();
+    // Using MatchResult but fallback to MatchSlot with COMPLETED status if MatchResult is empty
+    let results = await MatchResult.find({ tournamentId })
+      .populate("player1Id")
+      .populate("player2Id")
+      .populate("tournamentId")
+      .sort({ category: 1, playedAt: -1 })
+      .lean();
+
+    if (results.length === 0) {
+      const slots = await MatchSlot.find({ tournamentId, status: "COMPLETED" })
+        .populate("player1Id")
+        .populate("player2Id")
+        .populate("tournamentId")
+        .sort({ category: 1, updatedAt: -1 })
+        .lean();
+      
+      results = slots.map((s: any) => ({
+        ...s,
+        id: s._id.toString(),
+        player1: s.player1Id,
+        player2: s.player2Id,
+        tournament: s.tournamentId,
+        winnerId: s.winnerId
+      }));
+    } else {
+      results = results.map((r: any) => ({
+        ...r,
+        id: r._id.toString(),
+        player1: r.player1Id,
+        player2: r.player2Id,
+        tournament: r.tournamentId
+      }));
+    }
+
     return results
   } catch (error) {
     console.warn("Error fetching match results (DB offline):", error)
@@ -117,36 +148,36 @@ export default async function ResultsPage({
                       <div className="bg-gray-50 px-6 py-3 border-b border-gray-100 flex justify-between items-center">
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{match.round}</span>
                         <div className="flex items-center gap-2">
-                           <div className={`w-1.5 h-1.5 rounded-full ${match.tournament.status === 'ONGOING' ? 'bg-red-500 animate-pulse' : 'bg-[#2D6A4F]'}`} />
-                           <span className={`text-[10px] font-bold uppercase tracking-widest ${match.tournament.status === 'ONGOING' ? 'text-red-500' : 'text-[#2D6A4F]'}`}>
-                             {match.tournament.status === 'ONGOING' ? 'LIVE UPDATE' : 'FINAL RESULT'}
+                           <div className={`w-1.5 h-1.5 rounded-full ${match.tournament?.status === 'ONGOING' ? 'bg-red-500 animate-pulse' : 'bg-[#2D6A4F]'}`} />
+                           <span className={`text-[10px] font-bold uppercase tracking-widest ${match.tournament?.status === 'ONGOING' ? 'text-red-500' : 'text-[#2D6A4F]'}`}>
+                             {match.tournament?.status === 'ONGOING' ? 'LIVE UPDATE' : 'FINAL RESULT'}
                            </span>
                         </div>
                       </div>
                       
                       <div className="p-8 space-y-6">
                         {/* Player 1 Row */}
-                        <div className={`flex items-center justify-between ${match.winnerId === match.player1Id ? "text-gray-900" : "text-gray-400"}`}>
+                        <div className={`flex items-center justify-between ${(match.winnerId?.toString() === match.player1Id?.toString() || match.winnerId?.toString() === match.player1?._id?.toString()) ? "text-gray-900" : "text-gray-400"}`}>
                           <div className="flex items-center gap-4">
                             <div className={`relative w-10 h-10 rounded-full overflow-hidden shrink-0 border ${
-                              match.winnerId === match.player1Id ? "border-[#2D6A4F]/30" : "border-gray-200"
+                              (match.winnerId?.toString() === match.player1Id?.toString() || match.winnerId?.toString() === match.player1?._id?.toString()) ? "border-[#2D6A4F]/30" : "border-gray-200"
                             }`}>
                               <Image
-                                src={`https://api.dicebear.com/7.x/initials/svg?seed=${match.player1.firstName} ${match.player1.lastName}&backgroundColor=0A0A0A&textColor=E85D04`}
-                                alt={match.player1.firstName}
+                                src={`https://api.dicebear.com/7.x/initials/svg?seed=${match.player1?.firstName} ${match.player1?.lastName}&backgroundColor=0A0A0A&textColor=E85D04`}
+                                alt={match.player1?.firstName || "Player"}
                                 fill
                                 className="object-cover"
                                 unoptimized
                               />
                             </div>
                             <div>
-                              <p className={`font-bold ${match.winnerId === match.player1Id ? "text-lg" : "text-base"}`}>
-                                {match.player1.firstName} {match.player1.lastName}
+                              <p className={`font-bold ${(match.winnerId?.toString() === match.player1Id?.toString() || match.winnerId?.toString() === match.player1?._id?.toString()) ? "text-lg" : "text-base"}`}>
+                                {match.player1?.firstName} {match.player1?.lastName}
                               </p>
-                              <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">{match.player1.district}</p>
+                              <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">{match.player1?.district}</p>
                             </div>
                           </div>
-                          {match.winnerId === match.player1Id && <div className="bg-green-500 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]" />}
+                          {(match.winnerId?.toString() === match.player1Id?.toString() || match.winnerId?.toString() === match.player1?._id?.toString()) && <div className="bg-green-500 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]" />}
                         </div>
 
                         <div className="flex items-center justify-center py-2 relative">
@@ -155,39 +186,39 @@ export default async function ResultsPage({
                         </div>
 
                         {/* Player 2 Row */}
-                        <div className={`flex items-center justify-between ${match.winnerId === match.player2Id ? "text-gray-900" : "text-gray-400"}`}>
+                        <div className={`flex items-center justify-between ${(match.winnerId?.toString() === match.player2Id?.toString() || match.winnerId?.toString() === match.player2?._id?.toString()) ? "text-gray-900" : "text-gray-400"}`}>
                           <div className="flex items-center gap-4">
                             <div className={`relative w-10 h-10 rounded-full overflow-hidden shrink-0 border ${
-                              match.winnerId === match.player2Id ? "border-[#2D6A4F]/30" : "border-gray-200"
+                              (match.winnerId?.toString() === match.player2Id?.toString() || match.winnerId?.toString() === match.player2?._id?.toString()) ? "border-[#2D6A4F]/30" : "border-gray-200"
                             }`}>
                               <Image
-                                src={`https://api.dicebear.com/7.x/initials/svg?seed=${match.player2.firstName} ${match.player2.lastName}&backgroundColor=0A0A0A&textColor=E85D04`}
-                                alt={match.player2.firstName}
+                                src={`https://api.dicebear.com/7.x/initials/svg?seed=${match.player2?.firstName} ${match.player2?.lastName}&backgroundColor=0A0A0A&textColor=E85D04`}
+                                alt={match.player2?.firstName || "Player"}
                                 fill
                                 className="object-cover"
                                 unoptimized
                               />
                             </div>
                             <div>
-                              <p className={`font-bold ${match.winnerId === match.player2Id ? "text-lg" : "text-base"}`}>
-                                {match.player2.firstName} {match.player2.lastName}
+                              <p className={`font-bold ${(match.winnerId?.toString() === match.player2Id?.toString() || match.winnerId?.toString() === match.player2?._id?.toString()) ? "text-lg" : "text-base"}`}>
+                                {match.player2?.firstName} {match.player2?.lastName}
                               </p>
-                              <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">{match.player2.district}</p>
+                              <p className="text-[10px] uppercase font-bold tracking-widest opacity-60">{match.player2?.district}</p>
                             </div>
                           </div>
-                          {match.winnerId === match.player2Id && <div className="bg-green-500 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]" />}
+                          {(match.winnerId?.toString() === match.player2Id?.toString() || match.winnerId?.toString() === match.player2?._id?.toString()) && <div className="bg-green-500 w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,197,94,0.6)]" />}
                         </div>
                       </div>
 
                       <div className="mt-auto bg-gray-900 p-6 flex items-center justify-between text-white">
                         <div className="flex flex-col">
-                          <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Final Score</span>
-                          <span className="font-mono text-lg tracking-wider text-[#2D6A4F]">{match.score}</span>
+                           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Final Score</span>
+                           <span className="font-mono text-lg tracking-wider text-[#2D6A4F]">{match.score || "N/A"}</span>
                         </div>
                         <div className="bg-white/10 px-4 py-2 rounded-xl border border-white/5 flex flex-col items-end">
-                           <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Winner</span>
+                           <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Winner</span>
                            <span className="font-bold text-sm">
-                             {match.winnerId === match.player1Id ? match.player1.lastName : match.player2.lastName}
+                             {match.winnerId?.toString() === match.player1Id?.toString() || match.winnerId?.toString() === match.player1?._id?.toString() ? match.player1?.lastName : match.player2?.lastName}
                            </span>
                         </div>
                       </div>

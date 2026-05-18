@@ -1,22 +1,19 @@
 import { NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import User from "@/models/User"
+import { UserRole } from "@/models/enums"
 import bcrypt from "bcryptjs"
 import { playerRegistrationSchema } from "@/lib/validations"
-import { UserRole } from "@prisma/client"
 
 export async function POST(req: Request) {
   try {
-    if (!prisma) {
-      throw new Error("Can't reach database (Prisma not initialized)")
-    }
+    await connectToDatabase()
 
     const body = await req.json()
     const validatedData = playerRegistrationSchema.parse(body)
 
     // Check if contact already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { contact: validatedData.contact }
-    })
+    const existingUser = await User.findOne({ contact: validatedData.contact })
 
     if (existingUser) {
       return NextResponse.json(
@@ -30,25 +27,23 @@ export async function POST(req: Request) {
 
     // Generate TNTTA ID (TNTTA-YYYY-XXXX)
     const year = new Date().getFullYear()
-    const count = await prisma.user.count()
+    const count = await User.countDocuments()
     const tnttaId = `TNTTA-${year}-${(count + 1).toString().padStart(4, "0")}`
 
     // Create user
-    const user = await prisma.user.create({
-      data: {
-        tnttaId,
-        firstName: validatedData.firstName,
-        lastName: validatedData.lastName,
-        email: validatedData.email || null,
-        contact: validatedData.contact,
-        passwordHash,
-        gender: validatedData.gender,
-        dob: new Date(validatedData.dob),
-        district: validatedData.district,
-        club: validatedData.club || null,
-        categories: validatedData.categories,
-        role: UserRole.PLAYER,
-      }
+    const user = await User.create({
+      tnttaId,
+      firstName: validatedData.firstName,
+      lastName: validatedData.lastName,
+      email: validatedData.email || undefined,
+      contact: validatedData.contact,
+      passwordHash,
+      gender: validatedData.gender,
+      dob: new Date(validatedData.dob),
+      district: validatedData.district,
+      club: validatedData.club || undefined,
+      categories: validatedData.categories,
+      role: UserRole.PLAYER,
     })
 
     return NextResponse.json({ 
@@ -61,7 +56,7 @@ export async function POST(req: Request) {
     console.error("Registration error:", error)
     
     // Fallback for Demo / DB Offline during migration
-    if (error.message?.includes("Can't reach database") || error.code === "P1001") {
+    if (error.message?.includes("buffering timed out") || error.message?.includes("ECONNREFUSED")) {
       console.warn("DATABASE OFFLINE: Simulating successful registration for demo.")
       return NextResponse.json({ 
         success: true, 

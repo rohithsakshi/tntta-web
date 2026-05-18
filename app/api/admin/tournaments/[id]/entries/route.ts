@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { TournamentApplication, UserRole } from "@/models"
 import { auth } from "@/lib/auth"
-import { UserRole } from "@prisma/client"
 
 export async function GET(
   req: Request,
@@ -15,25 +15,22 @@ export async function GET(
   const { id: tournamentId } = await params
 
   try {
-    if (!prisma) throw new Error("Prisma not initialized")
+    await connectToDatabase()
+    
+    const entries = await TournamentApplication.find({ tournamentId })
+      .populate({
+        path: "playerId",
+        select: "id firstName lastName tnttaId district category"
+      })
+      .lean()
 
-    const entries = await prisma.tournamentApplication.findMany({
-      where: { tournamentId },
-      include: {
-        player: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            tnttaId: true,
-            district: true,
-            category: true
-          }
-        }
-      }
-    })
+    const normalizedEntries = entries.map((entry: any) => ({
+      ...entry,
+      id: entry._id.toString(),
+      player: entry.playerId
+    }))
 
-    return NextResponse.json(entries)
+    return NextResponse.json(normalizedEntries)
   } catch (error) {
     console.error("Fetch entries error:", error)
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })

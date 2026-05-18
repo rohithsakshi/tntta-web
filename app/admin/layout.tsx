@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
-import { UserRole } from "@prisma/client"
+import { UserRole } from "@/models/enums"
 import DashboardLayout from "@/app/dashboard/layout"
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {

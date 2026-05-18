@@ -1,8 +1,9 @@
 import NextAuth from "next-auth"
 import Credentials from "next-auth/providers/credentials"
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import User from "@/models/User"
 import bcrypt from "bcryptjs"
-import { UserRole } from "@prisma/client"
+import { UserRole } from "@/models/enums"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -32,12 +33,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
 
         try {
-          if (!prisma) {
-            throw new Error("Can't reach database (Prisma not initialized)")
-          }
-
-          const user = await prisma.user.findUnique({
-            where: { contact: credentials.contact as string }
+          await connectToDatabase()
+          
+          const user = await User.findOne({ 
+            contact: credentials.contact as string 
           })
 
           if (!user || !user.passwordHash) {
@@ -67,7 +66,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           console.error("Authentication error:", error)
           
           // Fallback for Demo / DB Offline
-          if (error.message?.includes("Can't reach database") || error.code === "P1001") {
+          if (error.name === 'MongooseError' || error.message?.includes("connection") || error.code === "P1001") {
             console.warn("DATABASE OFFLINE: Allowing demo player login.")
             return {
               id: "demo-player-id",

@@ -1,11 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { $Enums } from "@prisma/client";
+import connectToDatabase from "@/lib/mongodb";
+import { 
+  Tournament, 
+  MatchSlot, 
+  TournamentBracket, 
+  TableStatus, 
+  EventType, 
+  TournamentStatus, 
+  TableStatusEnum,
+  TournamentApplication
+} from "@/models";
 import { generateFixtures } from "@/lib/fixtures/generator";
 import { pusher } from "@/lib/pusher";
 
 export async function POST(req: NextRequest) {
   try {
+    await connectToDatabase();
     const { tournamentId } = await req.json();
 
     if (!tournamentId) {
@@ -13,27 +23,24 @@ export async function POST(req: NextRequest) {
     }
 
     // 1. Fetch tournament details
-    const tournament = await prisma.tournament.findUnique({
-      where: { id: tournamentId },
-      include: {
-        applications: {
-          where: { paymentStatus: "PAID" },
-          include: { player: true },
-        },
-      },
-    });
+    const tournament = await Tournament.findById(tournamentId).lean();
 
     if (!tournament) {
       return NextResponse.json({ error: "Tournament not found" }, { status: 404 });
     }
 
-    // 2. Fetch all PAID players
-    const players = tournament.applications.map((app: any) => ({
-      id: app.player.id,
-      firstName: app.player.firstName,
-      lastName: app.player.lastName,
-      district: app.player.district,
-      rankingPoints: app.player.rankingPoints,
+    // 2. Fetch all PAID applications with players
+    const applications = await TournamentApplication.find({ 
+      tournamentId, 
+      paymentStatus: "PAID" 
+    }).populate("playerId").lean();
+
+    const players = applications.map((app: any) => ({
+      id: app.playerId._id.toString(),
+      firstName: app.playerId.firstName,
+      lastName: app.playerId.lastName,
+      district: app.playerId.district,
+      rankingPoints: app.playerId.rankingPoints,
       category: app.category,
     }));
 
@@ -50,56 +57,45 @@ export async function POST(req: NextRequest) {
       startTime: tournament.startDate,
       categories: tournament.categories,
       eventTypes: [
-        $Enums.EventType.MENS_SINGLES, 
-        $Enums.EventType.WOMENS_SINGLES,
-        $Enums.EventType.MENS_DOUBLES,
-        $Enums.EventType.WOMENS_DOUBLES,
-        $Enums.EventType.MIXED_DOUBLES,
-        $Enums.EventType.TEAM
-      ],
+        EventType.MENS_SINGLES, 
+        EventType.WOMENS_SINGLES,
+        EventType.MENS_DOUBLES,
+        EventType.WOMENS_DOUBLES,
+        EventType.MIXED_DOUBLES,
+        EventType.TEAM
+      ] as any,
     });
 
-    // 4. Prisma Transaction
-    await prisma.$transaction([
-      // Clear existing
-      prisma.matchSlot.deleteMany({ where: { tournamentId } }),
-      prisma.teamMatch.deleteMany({ where: { tournamentId } }),
-      prisma.tournamentBracket.deleteMany({ where: { tournamentId } }),
-      prisma.tableStatus.deleteMany({ where: { tournamentId } }),
+    // 4. Data Updates
+    // Clear existing
+    await MatchSlot.deleteMany({ tournamentId });
+    // await TeamMatch.deleteMany({ tournamentId }); // Add if needed
+    await TournamentBracket.deleteMany({ tournamentId });
+    await TableStatus.deleteMany({ tournamentId });
 
-      // Create MatchSlots
-      prisma.matchSlot.createMany({
-        data: generated.slots.map(slot => ({
-          ...slot,
-          tournamentId,
-        })),
-      }),
+    // Create MatchSlots
+    await MatchSlot.insertMany(generated.slots.map(slot => ({
+      ...slot,
+      tournamentId,
+    })));
 
-      // Create Brackets
-      ...generated.brackets.map(bracket => 
-        prisma.tournamentBracket.create({
-          data: {
-            ...bracket,
-            tournamentId,
-          }
-        })
-      ),
+    // Create Brackets
+    await TournamentBracket.insertMany(generated.brackets.map(bracket => ({
+      ...bracket,
+      tournamentId,
+    })));
 
-      // Create Table Statuses
-      prisma.tableStatus.createMany({
-        data: Array.from({ length: 10 }, (_, i) => ({
-          tournamentId,
-          tableNumber: i + 1,
-          status: $Enums.TableStatusEnum.IDLE,
-        })),
-      }),
+    // Create Table Statuses
+    await TableStatus.insertMany(Array.from({ length: 10 }, (_, i) => ({
+      tournamentId,
+      tableNumber: i + 1,
+      status: TableStatusEnum.IDLE,
+    })));
 
-      // Update tournament status
-      prisma.tournament.update({
-        where: { id: tournamentId },
-        data: { status: $Enums.TournamentStatus.ONGOING },
-      }),
-    ]);
+    // Update tournament status
+    await Tournament.findByIdAndUpdate(tournamentId, { 
+      status: TournamentStatus.ONGOING 
+    });
 
     // 5. Trigger Pusher
     await pusher.trigger(`tournament-${tournamentId}-fixtures`, "fixtures.generated", {

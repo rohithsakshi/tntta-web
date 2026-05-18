@@ -1,4 +1,4 @@
-import { $Enums } from "@prisma/client";
+import { MatchStatus, EventType } from "@/models/enums";
 
 export type TeamMatchInput = {
   team1Name: string;
@@ -16,12 +16,12 @@ export function generateTeamMatchSchedule(input: TeamMatchInput) {
   const slotDuration = 10 * 60 * 1000;
   const buffer = 2 * 60 * 1000;
 
-  const matches = [
-    { p1: A, p2: X, type: $Enums.EventType.MENS_SINGLES, round: "Match 1" },
-    { p1: B, p2: Y, type: $Enums.EventType.MENS_SINGLES, round: "Match 2" },
-    { p1: [A, C], p2: [X, Z], type: $Enums.EventType.MENS_DOUBLES, round: "Match 3" }, // Doubles
-    { p1: B, p2: X, type: $Enums.EventType.MENS_SINGLES, round: "Match 4" },
-    { p1: A, p2: Z, type: $Enums.EventType.MENS_SINGLES, round: "Match 5" }, // Conditional
+    const matches = [
+    { p1: A, p2: X, type: EventType.MENS_SINGLES, round: "Match 1" },
+    { p1: B, p2: Y, type: EventType.MENS_SINGLES, round: "Match 2" },
+    { p1: [A, C], p2: [X, Z], type: EventType.MENS_DOUBLES, round: "Match 3" }, // Doubles
+    { p1: B, p2: X, type: EventType.MENS_SINGLES, round: "Match 4" },
+    { p1: A, p2: Z, type: EventType.MENS_SINGLES, round: "Match 5" }, // Conditional
   ];
 
   matches.forEach((m, i) => {
@@ -42,7 +42,7 @@ export function generateTeamMatchSchedule(input: TeamMatchInput) {
       doubles1Partner2Id: Array.isArray(m.p1) ? m.p1[1] : null,
       doubles2Partner1Id: Array.isArray(m.p2) ? m.p2[0] : null,
       doubles2Partner2Id: Array.isArray(m.p2) ? m.p2[1] : null,
-      status: $Enums.MatchStatus.SCHEDULED,
+      status: MatchStatus.SCHEDULED,
     });
   });
 

@@ -1,137 +1,164 @@
-import prisma from "./prisma"
-import type { User as PrismaUser } from "@prisma/client"
+import connectToDatabase from "./mongodb";
+import { User, Tournament, MatchSlot, NewsItem, MatchResult } from "@/models";
+import mongoose from "mongoose";
 
 export async function getUpcomingTournaments() {
-  if (!prisma) return []
-  
   try {
-    const tournaments = await prisma.tournament.findMany({
-      where: { 
-        status: { in: ["OPEN", "ONGOING"] } 
-      },
-      orderBy: { startDate: "asc" },
-      take: 3,
+    await connectToDatabase();
+    const tournaments = await Tournament.find({
+      status: { $in: ["OPEN", "ONGOING", "UPCOMING"] }
     })
-    return tournaments
+    .sort({ startDate: 1 })
+    .limit(3)
+    .lean();
+    
+    return tournaments.map((t: any) => ({ 
+      ...t, 
+      id: t._id.toString(),
+      startDate: t.startDate?.toISOString() || new Date().toISOString(),
+      endDate: t.endDate?.toISOString() || new Date().toISOString(),
+    }));
   } catch (error) {
-    console.info("Info: Upcoming tournaments currently unavailable (Offline).")
-    return []
+    console.info("Server Info: Upcoming tournaments currently unavailable (Offline).");
+    return [];
   }
 }
 
 export async function getLatestNews() {
-  if (!prisma) return []
-  
   try {
-    const news = await prisma.newsItem.findMany({
-      where: { isPublished: true },
-      orderBy: { publishedAt: "desc" },
-      take: 2,
-    })
-    return news
+    await connectToDatabase();
+    const news = await NewsItem.find({ isPublished: true })
+      .sort({ publishedAt: -1 })
+      .limit(2)
+      .lean();
+    return news.map((n: any) => ({ 
+      ...n, 
+      id: n._id.toString(),
+      publishedAt: n.publishedAt?.toISOString() || new Date().toISOString()
+    }));
   } catch (error) {
-    console.info("Info: Latest news currently unavailable (Offline).")
-    return []
+    console.info("Server Info: Latest news currently unavailable (Offline).");
+    return [];
   }
 }
 
 export async function getRecentResults() {
-  if (!prisma) return []
-  
   try {
-    const results = await prisma.matchResult.findMany({
-      orderBy: { playedAt: "desc" },
-      take: 5,
-      include: {
-        player1: true,
-        player2: true,
-        tournament: true,
-      },
-    })
-    return results
+    await connectToDatabase();
+    // Try to get from MatchResult first
+    let resultsRaw = await MatchResult.find({})
+      .sort({ playedAt: -1 })
+      .limit(5)
+      .populate("player1Id")
+      .populate("player2Id")
+      .populate("tournamentId")
+      .lean();
+
+    if (resultsRaw.length === 0) {
+      // Fallback to completed MatchSlots
+      resultsRaw = await MatchSlot.find({ status: "COMPLETED" })
+        .sort({ updatedAt: -1 })
+        .limit(5)
+        .populate("player1Id")
+        .populate("player2Id")
+        .populate("tournamentId")
+        .lean();
+    }
+
+    return resultsRaw
+      .filter((r: any) => r.player1Id && r.player2Id && r.tournamentId)
+      .map((r: any) => ({
+        ...r,
+        id: r._id.toString(),
+        player1: { ...r.player1Id, id: r.player1Id._id.toString() },
+        player2: { ...r.player2Id, id: r.player2Id._id.toString() },
+        tournament: { ...r.tournamentId, id: r.tournamentId._id.toString() }
+      }));
   } catch (error) {
-    console.info("Info: Database results currently unavailable (Offline).")
-    return []
+    console.info("Server Info: Database results currently unavailable (Offline).");
+    return [];
   }
 }
 
 export async function getTopPlayers() {
-  if (!prisma) return []
-  
   try {
-    const players = await prisma.user.findMany({
-      where: { 
-        role: "PLAYER",
-        OR: [
-          { isFeatured: true },
-          { rankingPoints: { gt: 0 } }
-        ]
-      },
-      orderBy: [
-        { isFeatured: "desc" },
-        { rankingPoints: "desc" }
-      ],
-      take: 6,
+    await connectToDatabase();
+    const players = await User.find({
+      role: "PLAYER",
+      $or: [
+        { isFeatured: true },
+        { rankingPoints: { $gt: 0 } }
+      ]
     })
-    return players
+    .sort({ isFeatured: -1, rankingPoints: -1 })
+    .limit(6)
+    .lean();
+    return players.map((p: any) => ({ ...p, id: p._id.toString() }));
   } catch (error) {
-    console.info("Info: Top players currently unavailable (Offline).")
-    return []
+    console.info("Server Info: Top players currently unavailable (Offline).");
+    return [];
   }
 }
 
 export async function getRankingsSummary() {
-  if (!prisma) return []
-  
   try {
-    const rankings = await prisma.user.findMany({
-      where: { role: "PLAYER" },
-      orderBy: { rankingPoints: "desc" },
-      take: 5,
-    })
-    return rankings
+    await connectToDatabase();
+    const rankings = await User.find({ role: "PLAYER" })
+      .sort({ rankingPoints: -1 })
+      .limit(5)
+      .lean();
+    return rankings.map((r: any) => ({ ...r, id: r._id.toString() }));
   } catch (error) {
-    console.info("Info: Rankings summary currently unavailable (Offline).")
-    return []
+    console.info("Server Info: Rankings summary currently unavailable (Offline).");
+    return [];
   }
 }
 
 export async function getLiveMatches() {
-  if (!prisma) return []
-  
   try {
-    const matches = await prisma.matchSlot.findMany({
-      where: { status: "IN_PROGRESS" },
-      include: {
-        player1: true,
-        player2: true,
-        tournament: true,
-      },
-      take: 5,
-    })
-    return matches
+    await connectToDatabase();
+    const matchesRaw = await MatchSlot.find({ status: "IN_PROGRESS" })
+      .populate("player1Id")
+      .populate("player2Id")
+      .populate("tournamentId")
+      .limit(5)
+      .lean();
+      
+    return matchesRaw
+      .filter((m: any) => m.player1Id && m.player2Id && m.tournamentId)
+      .map((m: any) => ({
+        ...m,
+        id: m._id.toString(),
+        player1: { ...m.player1Id, id: m.player1Id._id.toString() },
+        player2: { ...m.player2Id, id: m.player2Id._id.toString() },
+        tournament: { ...m.tournamentId, id: m.tournamentId._id.toString() }
+      }));
   } catch (error) {
-    console.info("Info: Live matches currently unavailable (Offline).")
-    return []
+    console.info("Server Info: Live matches currently unavailable (Offline).");
+    return [];
   }
 }
 
 export async function getTournamentWinners() {
-  if (!prisma) return []
-  
   try {
-    const winners = await prisma.matchResult.findMany({
-      where: { round: { in: ["Final", "FINAL"] } },
-      orderBy: { playedAt: "desc" },
-      take: 6,
-      include: {
-        winner: true,
-      },
+    await connectToDatabase();
+    const winnersRaw = await MatchSlot.find({ 
+      round: { $regex: /final/i },
+      status: "COMPLETED"
     })
-    return winners.map((w: { winner: PrismaUser }) => w.winner)
+    .sort({ updatedAt: -1 })
+    .limit(6)
+    .populate("winnerId")
+    .lean();
+    
+    return winnersRaw
+      .filter((w: any) => w.winnerId)
+      .map((w: any) => ({
+        ...w.winnerId,
+        id: w.winnerId._id.toString()
+      }));
   } catch (error) {
-    console.info("Info: Tournament winners currently unavailable (Offline).")
-    return []
+    console.info("Server Info: Tournament winners currently unavailable (Offline).");
+    return [];
   }
 }
-

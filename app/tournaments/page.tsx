@@ -2,27 +2,37 @@ import Link from "next/link"
 import Image from "next/image"
 import { Calendar, MapPin, Trophy, Users, ChevronRight, Search } from "lucide-react"
 import { format } from "date-fns"
-import prisma from "@/lib/prisma"
-import { TournamentStatus } from "@prisma/client"
+import connectToDatabase from "@/lib/mongodb"
+import { Tournament, TournamentStatus, TournamentApplication } from "@/models"
 
 export const dynamic = "force-dynamic"
 
 
 async function getTournaments(status?: string) {
   try {
-    const tournaments = await prisma.tournament.findMany({
-      where: status && status !== "ALL" ? { status: status as TournamentStatus } : {},
-      orderBy: { startDate: "asc" },
-      include: {
-        _count: {
-          select: { applications: true }
-        }
-      }
-    })
+    await connectToDatabase();
+    const query: any = {};
+    if (status && status !== "ALL") {
+      query.status = status;
+    }
+
+    const tournamentsRaw = await Tournament.find(query)
+      .sort({ startDate: 1 })
+      .lean();
+    
+    // Manually add application counts
+    const tournaments = await Promise.all(tournamentsRaw.map(async (t: any) => {
+      const appCount = await TournamentApplication.countDocuments({ tournamentId: t._id });
+      return {
+        ...t,
+        id: t._id.toString(),
+        _count: { applications: appCount }
+      };
+    }));
     
     return tournaments
   } catch (error) {
-    console.info("Info: Tournaments fetch currently offline.")
+    console.info("Info: Tournaments fetch currently offline.");
     return [
       {
         id: "demo-1",

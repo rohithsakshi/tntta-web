@@ -20,7 +20,7 @@ import {
   Building2
 } from "lucide-react"
 import { toast } from "react-hot-toast"
-import type { Category, Gender } from "@prisma/client"
+import { Category, Gender } from "@/models/enums"
 
 const districts = [
   "Ariyalur", "Chengalpattu", "Chennai", "Coimbatore", "Cuddalore", "Dharmapuri", 

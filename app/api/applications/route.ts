@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { Tournament, TournamentApplication, PaymentStatus } from "@/models"
 import { auth } from "@/lib/auth"
-import { tournamentApplicationSchema } from "@/lib/validations"
-import { PaymentStatus } from "@prisma/client"
 
 export async function GET(req: Request) {
   const session = await auth()
@@ -14,21 +13,30 @@ export async function GET(req: Request) {
   const tournamentId = searchParams.get("tournamentId")
 
   try {
-    const applications = await prisma.tournamentApplication.findMany({
-      where: {
-        AND: [
-          session.user.role === "ADMIN" ? {} : { playerId: session.user.id },
-          tournamentId ? { tournamentId } : {}
-        ]
-      },
-      include: {
-        tournament: true,
-        player: true
-      },
-      orderBy: { appliedAt: "desc" }
-    })
+    await connectToDatabase()
+    
+    let query: any = {}
+    if (session.user.role !== "ADMIN") {
+      query.playerId = session.user.id
+    }
+    if (tournamentId) {
+      query.tournamentId = tournamentId
+    }
 
-    return NextResponse.json({ success: true, data: applications })
+    const applications = await TournamentApplication.find(query)
+      .populate("tournamentId")
+      .populate("playerId")
+      .sort({ appliedAt: -1 })
+      .lean()
+
+    // Transforming for frontend if needed (renaming tournamentId/playerId to tournament/player)
+    const transformedData = applications.map((app: any) => ({
+      ...app,
+      tournament: app.tournamentId,
+      player: app.playerId,
+    }))
+
+    return NextResponse.json({ success: true, data: transformedData })
   } catch (error: any) {
     console.warn("API: Failed to fetch applications (DB offline)")
     return NextResponse.json({ success: true, data: [] })
@@ -42,9 +50,7 @@ export async function POST(req: Request) {
   }
 
   try {
-    if (!prisma) {
-      throw new Error("Can't reach database (Prisma not initialized)")
-    }
+    await connectToDatabase()
 
     const body = await req.json()
     const { tournamentId, categories } = body
@@ -53,9 +59,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "No categories selected" }, { status: 400 })
     }
 
-    const tournament = await prisma.tournament.findUnique({
-      where: { id: tournamentId }
-    })
+    const tournament = await Tournament.findById(tournamentId)
 
     if (!tournament) {
       return NextResponse.json({ success: false, error: "Tournament not found" }, { status: 404 })
@@ -63,16 +67,14 @@ export async function POST(req: Request) {
 
     const createdApplications = []
     const year = new Date().getFullYear()
-    let count = await prisma.tournamentApplication.count()
+    let count = await TournamentApplication.countDocuments()
 
     for (const category of categories) {
       // Check if already registered for this category
-      const existingApp = await prisma.tournamentApplication.findFirst({
-        where: {
-          tournamentId,
-          playerId: session.user.id,
-          category
-        }
+      const existingApp = await TournamentApplication.findOne({
+        tournamentId,
+        playerId: session.user.id,
+        category
       })
 
       if (existingApp) continue // Skip if already registered
@@ -80,16 +82,14 @@ export async function POST(req: Request) {
       count++
       const appId = `APP-${year}-${count.toString().padStart(4, "0")}`
 
-      const application = await prisma.tournamentApplication.create({
-        data: {
-          appId,
-          tournamentId,
-          playerId: session.user.id,
-          category,
-          amount: tournament.entryFee,
-          paymentStatus: PaymentStatus.PAID,
-          confirmedAt: new Date()
-        }
+      const application = await TournamentApplication.create({
+        appId,
+        tournamentId,
+        playerId: session.user.id,
+        category,
+        amount: tournament.entryFee,
+        paymentStatus: PaymentStatus.PAID,
+        confirmedAt: new Date()
       })
       createdApplications.push(application)
     }
@@ -103,7 +103,7 @@ export async function POST(req: Request) {
     console.error("Application submission error:", error)
     
     // Fallback for Demo / DB Offline
-    if (error.message?.includes("Can't reach database") || error.code === "P1001") {
+    if (error.message?.includes("buffering timed out") || error.message?.includes("ECONNREFUSED")) {
       console.warn("DATABASE OFFLINE: Simulating successful application submission.")
       return NextResponse.json({ 
         success: true, 

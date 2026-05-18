@@ -1,24 +1,31 @@
 import React from 'react';
-import prisma from '@/lib/prisma';
+import connectToDatabase from '@/lib/mongodb';
+import { MatchSlot, Tournament } from '@/models';
 import ScheduleGrid from '@/components/fixtures/ScheduleGrid';
 
 export const dynamic = "force-dynamic";
 
 async function getScheduleData(tournamentId: string) {
-  if (!prisma) return { slots: [], startTime: new Date() };
+  try {
+    await connectToDatabase();
 
-  const [slots, tournament] = await Promise.all([
-    prisma.matchSlot.findMany({
-      where: { tournamentId },
-      orderBy: { scheduledStartTime: 'asc' },
-    }),
-    prisma.tournament.findUnique({
-      where: { id: tournamentId },
-      select: { startDate: true }
-    })
-  ]);
+    const [slotsRaw, tournament] = await Promise.all([
+      MatchSlot.find({ tournamentId })
+        .sort({ scheduledStartTime: 1 })
+        .lean(),
+      Tournament.findById(tournamentId)
+        .select("startDate")
+        .lean()
+    ]);
 
-  return { slots, startTime: tournament?.startDate || new Date() };
+    return { 
+      slots: slotsRaw.map((s: any) => ({ ...s, id: s._id.toString() })), 
+      startTime: (tournament as any)?.startDate || new Date() 
+    };
+  } catch (error) {
+    console.error("Error fetching schedule:", error);
+    return { slots: [], startTime: new Date() };
+  }
 }
 
 export default async function TournamentSchedulePage({ params }: { params: Promise<{ id: string }> }) {

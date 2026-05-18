@@ -1,12 +1,18 @@
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { Tournament } from "@/models"
 import { notFound } from "next/navigation"
 import EditTournamentForm from "./EditTournamentForm"
 
 async function getTournament(id: string) {
-  const tournament = await prisma.tournament.findUnique({
-    where: { id }
-  })
-  return tournament
+  try {
+    await connectToDatabase();
+    const tournament = await Tournament.findById(id).lean();
+    if (!tournament) return null;
+    return { ...tournament, id: tournament._id.toString() };
+  } catch (error) {
+    console.error("Error fetching tournament for edit:", error);
+    return null;
+  }
 }
 
 export default async function EditTournamentPage({ params }: { params: Promise<{ id: string }> }) {

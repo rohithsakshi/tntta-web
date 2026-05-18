@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth"
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { TournamentApplication } from "@/models"
 import { Trophy, Calendar, MapPin, Clock } from "lucide-react"
 import { format } from "date-fns"
 import { redirect } from "next/navigation"
@@ -13,11 +14,19 @@ export default async function MyTournamentsPage() {
 
   let applications = []
   try {
-    applications = await prisma.tournamentApplication.findMany({
-      where: { playerId: session.user.id },
-      include: { tournament: true },
-      orderBy: { appliedAt: "desc" }
-    })
+    await connectToDatabase();
+    applications = await TournamentApplication.find({ playerId: session.user.id })
+      .populate("tournamentId")
+      .sort({ appliedAt: -1 })
+      .lean();
+    
+    // Normalize data for frontend
+    applications = applications.map((app: any) => ({
+        ...app,
+        id: app._id.toString(),
+        tournament: app.tournamentId,
+    }));
+
   } catch (error) {
     console.warn("Error fetching applications (DB offline):", error)
   }
@@ -45,28 +54,28 @@ export default async function MyTournamentsPage() {
                   </span>
                 </div>
 
-                <h3 className="text-2xl font-bold text-gray-900 mb-6">{app.tournament.title}</h3>
+                <h3 className="text-2xl font-bold text-gray-900 mb-6">{app.tournament?.title || "Unknown Tournament"}</h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                   <div className="flex items-center gap-3 text-gray-600">
                     <Calendar size={18} className="text-[#E85D04]" />
                     <div className="text-sm">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Date</p>
-                      <p className="font-bold">{format(new Date(app.tournament.startDate), "MMM dd, yyyy")}</p>
+                      <p className="font-bold">{app.tournament?.startDate ? format(new Date(app.tournament.startDate), "MMM dd, yyyy") : "N/A"}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 text-gray-600">
                     <MapPin size={18} className="text-[#E85D04]" />
                     <div className="text-sm">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Venue</p>
-                      <p className="font-bold line-clamp-1">{app.tournament.venue}</p>
+                      <p className="font-bold line-clamp-1">{app.tournament?.venue || "N/A"}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 text-gray-600">
                     <Trophy size={18} className="text-[#E85D04]" />
                     <div className="text-sm">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Category</p>
-                      <p className="font-bold">{app.category.replace("_", " ")}</p>
+                      <p className="font-bold">{app.category?.replace("_", " ") || "N/A"}</p>
                     </div>
                   </div>
                 </div>
@@ -74,7 +83,7 @@ export default async function MyTournamentsPage() {
 
               <div className="bg-gray-50 p-8 flex flex-col justify-center border-l border-gray-100 min-w-[200px]">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 text-center">Amount</p>
-                <p className="text-3xl font-bebas text-gray-900 text-center mb-6">₹{app.amount / 100}</p>
+                <p className="text-3xl font-bebas text-gray-900 text-center mb-6">₹{(app.amount || 0) / 100}</p>
                 <Link 
                   href={`/dashboard/tournaments/${app.id}/slip`}
                   className="w-full py-3 bg-white border border-gray-200 rounded-xl text-xs font-bold hover:bg-gray-100 transition-all text-center block"

@@ -2,7 +2,7 @@ import { Trophy, ChevronRight } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { getRankingsSummary } from "@/lib/data"
-import type { User as PrismaUser } from "@prisma/client"
+
 
 export default async function RankingsSummary() {
   const players = await getRankingsSummary()
@@ -40,7 +40,7 @@ export default async function RankingsSummary() {
                   </thead>
                   <tbody className="divide-y divide-white/5">
                     {players.length > 0 ? (
-                      players.map((player: PrismaUser, index: number) => (
+                      players.map((player: any, index: number) => (
                         <tr key={player.id} className="hover:bg-white/5 transition-colors group">
                           <td className="px-8 py-6 text-center">
                             <span className={`font-bebas text-2xl ${index === 0 ? "text-[#E85D04]" : "text-gray-400"}`}>
@@ -60,10 +60,10 @@ export default async function RankingsSummary() {
                               </div>
                               <div>
                                 <p className="font-bold text-white group-hover:text-[#E85D04] transition-colors">
-                                  {player.firstName} {player.lastName}
+                                  {player?.firstName} {player?.lastName}
                                 </p>
                                 <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-                                  {player.district}
+                                  {player?.district}
                                 </p>
                               </div>
                             </div>

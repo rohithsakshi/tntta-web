@@ -1,4 +1,5 @@
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { Tournament, TournamentApplication } from "@/models"
 import { 
   Plus, 
   Trophy, 
@@ -20,36 +21,34 @@ import TournamentsTable from "./TournamentsTable"
 
 export const dynamic = "force-dynamic"
 
-
-
 async function getTournaments() {
   try {
-    if (!prisma) return { tournaments: [], statsMap: {} }
+    await connectToDatabase();
     
-    const [tournaments, stats] = await Promise.all([
-      prisma.tournament.findMany({
-        orderBy: { createdAt: "desc" },
-        include: {
-          _count: {
-            select: { applications: true }
-          }
-        }
-      }),
-      prisma.tournament.groupBy({
-        by: ["status"],
-        _count: true
-      })
-    ])
+    const tournamentsRaw = await Tournament.find({}).sort({ createdAt: -1 }).lean();
+    
+    const stats = await Tournament.aggregate([
+      { $group: { _id: "$status", count: { $sum: 1 } } }
+    ]);
 
     const statsMap = stats.reduce((acc: any, curr: any) => {
-      acc[curr.status] = curr._count
+      acc[curr._id] = curr.count
       return acc
     }, {} as Record<string, number>)
+
+    // Manually add application counts
+    const tournaments = await Promise.all(tournamentsRaw.map(async (t: any) => {
+      const appCount = await TournamentApplication.countDocuments({ tournamentId: t._id });
+      return {
+        ...t,
+        id: t._id.toString(),
+        _count: { applications: appCount }
+      };
+    }));
 
     return { tournaments, statsMap }
   } catch (error) {
     console.info("Info: Tournaments data fetch currently offline.")
-    // Provide a mock tournament so the list isn't empty in demo mode
     return { 
       tournaments: [
         {

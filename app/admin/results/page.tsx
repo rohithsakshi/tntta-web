@@ -1,4 +1,5 @@
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { Tournament, MatchSlot, TournamentApplication } from "@/models"
 import { 
   Target, 
   Trophy, 
@@ -6,31 +7,40 @@ import {
   ArrowRight,
   CheckCircle2,
   Clock,
-  Plus
+  Plus,
+  Activity, 
+  Users, 
+  Eye
 } from "lucide-react"
 import Link from "next/link"
 import StatsCard from "@/components/admin/StatsCard"
 import StatusBadge from "@/components/admin/StatusBadge"
+import { format } from "date-fns"
 
 export const dynamic = "force-dynamic"
 
 async function getTournamentsWithResultStats() {
   try {
-    if (!prisma) return []
-    const tournaments = await prisma.tournament.findMany({
-      where: {
-        status: { in: ["ONGOING", "COMPLETED"] }
-      },
-      include: {
-        _count: {
-          select: { 
-            matches: true,
-            applications: true
-          }
-        }
-      },
-      orderBy: { startDate: "desc" }
+    await connectToDatabase();
+    const tournamentsRaw = await Tournament.find({
+      status: { $in: ["ONGOING", "COMPLETED"] }
     })
+    .sort({ startDate: -1 })
+    .lean();
+
+    const tournaments = await Promise.all(tournamentsRaw.map(async (t: any) => {
+      const matchCount = await MatchSlot.countDocuments({ tournamentId: t._id, status: "COMPLETED" });
+      const appCount = await TournamentApplication.countDocuments({ tournamentId: t._id });
+      return {
+        ...t,
+        id: t._id.toString(),
+        _count: {
+          matches: matchCount,
+          applications: appCount
+        }
+      }
+    }));
+    
     return tournaments
   } catch (error) {
     console.warn("Results tournaments fetch failed:", error)
@@ -54,7 +64,7 @@ export default async function AdminResultsPage() {
         <StatsCard 
           title="Active Tournaments"
           value={tournaments.filter((t: any) => t.status === "ONGOING").length}
-          icon={Activity} // Activity not imported, wait. Lucide Activity.
+          icon={Activity}
           color="orange"
         />
         <StatsCard 
@@ -91,7 +101,7 @@ export default async function AdminResultsPage() {
               <div className="flex items-center gap-4 text-gray-500 text-sm mb-8">
                 <div className="flex items-center gap-1">
                   <Calendar size={14} />
-                  <span>{format(new Date(tourn.startDate), "MMM yyyy")}</span>
+                  <span>{tourn.startDate ? format(new Date(tourn.startDate), "MMM yyyy") : "N/A"}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Users size={14} />
@@ -128,7 +138,3 @@ export default async function AdminResultsPage() {
     </div>
   )
 }
-
-// Fix missing imports
-import { Activity, Users, Eye } from "lucide-react"
-import { format } from "date-fns"

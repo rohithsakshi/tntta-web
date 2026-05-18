@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import connectToDatabase from "@/lib/mongodb";
+import { User } from "@/models";
 
 export async function PATCH(
   req: NextRequest,
@@ -9,10 +10,17 @@ export async function PATCH(
   const { isFeatured } = await req.json();
 
   try {
-    const player = await prisma.user.update({
-      where: { id: playerId },
-      data: { isFeatured },
-    });
+    await connectToDatabase();
+    
+    const player = await User.findByIdAndUpdate(
+      playerId,
+      { isFeatured },
+      { new: true }
+    );
+
+    if (!player) {
+      return NextResponse.json({ error: "Player not found" }, { status: 404 });
+    }
 
     return NextResponse.json({ success: true, player });
   } catch (error) {

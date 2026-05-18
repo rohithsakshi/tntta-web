@@ -1,4 +1,5 @@
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { User, Tournament, TournamentApplication } from "@/models"
 import { 
   Users, 
   Trophy, 
@@ -21,6 +22,7 @@ export const dynamic = "force-dynamic"
 
 async function getDashboardData() {
   try {
+    await connectToDatabase();
     const now = new Date()
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
 
@@ -30,41 +32,40 @@ async function getDashboardData() {
       activeTournaments,
       openTournaments,
       pendingPayments,
-      totalCollected,
-      recentApplications,
-      upcomingDeadlines,
-      recentTournaments
+      applicationsRaw,
+      upcomingDeadlinesRaw,
+      recentTournamentsRaw
     ] = await Promise.all([
-      prisma.user.count({ where: { role: "PLAYER" } }),
-      prisma.user.count({ where: { role: "PLAYER", createdAt: { gte: firstDayOfMonth } } }),
-      prisma.tournament.count({ where: { status: { in: ["OPEN", "ONGOING"] } } }),
-      prisma.tournament.count({ where: { status: "OPEN" } }),
-      prisma.tournamentApplication.count({ where: { paymentStatus: "PENDING" } }),
-      prisma.tournamentApplication.aggregate({
-        where: { paymentStatus: "PAID" },
-        _sum: { amount: true }
-      }),
-      prisma.tournamentApplication.findMany({
-        take: 10,
-        orderBy: { appliedAt: "desc" },
-        include: {
-          player: true,
-          tournament: true
-        }
-      }),
-      prisma.tournament.findMany({
-        where: { 
-          status: "OPEN",
-          registrationDeadline: { gte: now }
-        },
-        orderBy: { registrationDeadline: "asc" },
-        take: 5
-      }),
-      prisma.tournament.findMany({
-        take: 5,
-        orderBy: { createdAt: "desc" }
+      User.countDocuments({ role: "PLAYER" }),
+      User.countDocuments({ role: "PLAYER", createdAt: { $gte: firstDayOfMonth } }),
+      Tournament.countDocuments({ status: { $in: ["OPEN", "ONGOING"] } }),
+      Tournament.countDocuments({ status: "OPEN" }),
+      TournamentApplication.countDocuments({ paymentStatus: "PENDING" }),
+      TournamentApplication.find({})
+        .sort({ appliedAt: -1 })
+        .limit(10)
+        .populate("playerId")
+        .populate("tournamentId")
+        .lean(),
+      Tournament.find({ 
+        status: "OPEN",
+        registrationDeadline: { $gte: now }
       })
+      .sort({ registrationDeadline: 1 })
+      .limit(5)
+      .lean(),
+      Tournament.find({})
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean()
     ])
+
+    // Sum total collected
+    const totalCollectedAgg = await TournamentApplication.aggregate([
+      { $match: { paymentStatus: "PAID" } },
+      { $group: { _id: null, total: { $sum: "$amount" } } }
+    ]);
+    const totalCollected = totalCollectedAgg[0]?.total || 0;
 
     return {
       playerCount,
@@ -72,13 +73,24 @@ async function getDashboardData() {
       activeTournaments,
       openTournaments,
       pendingPayments,
-      totalCollected: (totalCollected._sum.amount || 0) / 100,
-      recentApplications,
-      upcomingDeadlines,
-      recentTournaments
+      totalCollected: totalCollected / 100,
+      recentApplications: applicationsRaw.map((app: any) => ({
+        ...app,
+        id: app._id.toString(),
+        player: app.playerId,
+        tournament: app.tournamentId
+      })),
+      upcomingDeadlines: upcomingDeadlinesRaw.map((t: any) => ({
+        ...t,
+        id: t._id.toString()
+      })),
+      recentTournaments: recentTournamentsRaw.map((t: any) => ({
+        ...t,
+        id: t._id.toString()
+      }))
     }
   } catch (error) {
-    console.warn("Database fetch failed. Returning empty data (offline).")
+    console.warn("Database fetch failed. Returning empty data (offline).", error)
     return {
       playerCount: 0,
       newPlayersThisMonth: 0,
@@ -157,14 +169,14 @@ export default async function AdminDashboard() {
                 <div key={app.id} className="flex items-center justify-between p-5 hover:bg-gray-50 rounded-2xl transition-all group">
                   <div className="flex items-center gap-4">
                     <div className="w-12 h-12 rounded-xl bg-gray-100 flex items-center justify-center font-bold text-gray-400">
-                      {app.player.firstName[0]}{app.player.lastName[0]}
+                      {app.player?.firstName?.[0] || '?'}{app.player?.lastName?.[0] || '?'}
                     </div>
                     <div>
                       <p className="text-sm font-bold text-gray-900 group-hover:text-[#E85D04] transition-colors">
-                        {app.player.firstName} {app.player.lastName}
+                        {app.player?.firstName || 'Unknown'} {app.player?.lastName || 'Player'}
                       </p>
                       <p className="text-xs text-gray-500">
-                        Registered for <span className="font-medium text-gray-700">{app.tournament.title}</span>
+                        Registered for <span className="font-medium text-gray-700">{app.tournament?.title || 'Unknown Tournament'}</span>
                       </p>
                     </div>
                   </div>

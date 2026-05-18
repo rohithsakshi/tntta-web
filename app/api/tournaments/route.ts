@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { Tournament, UserRole } from "@/models"
 import { auth } from "@/lib/auth"
-import { UserRole } from "@prisma/client"
 import { tournamentSchema } from "@/lib/validations"
 
 export async function GET(req: Request) {
@@ -10,17 +10,23 @@ export async function GET(req: Request) {
   const limit = searchParams.get("limit")
 
   try {
-    const tournaments = await prisma.tournament.findMany({
-      where: status ? { status: status as any } : {},
-      take: limit ? parseInt(limit) : undefined,
-      orderBy: { startDate: "asc" },
-    })
+    await connectToDatabase()
+    
+    let query = {}
+    if (status) {
+      query = { status }
+    }
+
+    const tournaments = await Tournament.find(query)
+      .sort({ startDate: 1 })
+      .limit(limit ? parseInt(limit) : 0)
+      .lean()
 
     return NextResponse.json({ success: true, data: tournaments })
   } catch (error: any) {
-    console.warn("API: Failed to fetch tournaments (DB offline)")
+    console.warn("API: Failed to fetch tournaments (DB offline or Error)")
     
-    // Return mock data for the registration page to work
+    // Return mock data as fallback to maintain UI
     return NextResponse.json({ 
       success: true, 
       data: [
@@ -46,6 +52,7 @@ export async function POST(req: Request) {
   }
 
   try {
+    await connectToDatabase()
     const body = await req.json()
     const validatedData = tournamentSchema.parse(body)
     
@@ -54,12 +61,10 @@ export async function POST(req: Request) {
       .replace(/ /g, "-")
       .replace(/[^\w-]+/g, "")
 
-    const tournament = await prisma.tournament.create({
-      data: {
-        ...validatedData,
-        slug,
-        createdById: session.user.id,
-      }
+    const tournament = await Tournament.create({
+      ...validatedData,
+      slug,
+      createdById: session.user.id,
     })
 
     return NextResponse.json({ success: true, data: tournament })

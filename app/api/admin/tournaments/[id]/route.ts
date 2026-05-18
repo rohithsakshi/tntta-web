@@ -1,7 +1,14 @@
 import { NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { 
+  Tournament, 
+  TournamentApplication, 
+  UserRole, 
+  TournamentStatus, 
+  TournamentType, 
+  Category 
+} from "@/models"
 import { auth } from "@/lib/auth"
-import { UserRole, TournamentStatus, TournamentType, Category } from "@prisma/client"
 import { z } from "zod"
 
 const tournamentSchema = z.object({
@@ -29,21 +36,23 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
   const { id } = await params
 
   try {
-    const tournament = await prisma.tournament.findUnique({
-      where: { id },
-      include: {
-        _count: {
-          select: { applications: true }
-        }
-      }
-    })
+    await connectToDatabase()
+    const tournament = await Tournament.findById(id).lean()
+    
     if (!tournament) {
       if (id.includes("demo")) {
          return NextResponse.json({ id, title: "Demo Tournament", status: "DRAFT" })
       }
       return NextResponse.json({ error: "Not Found" }, { status: 404 })
     }
-    return NextResponse.json(tournament)
+
+    const appCount = await TournamentApplication.countDocuments({ tournamentId: id })
+    
+    return NextResponse.json({
+      ...tournament,
+      id: tournament._id.toString(),
+      _count: { applications: appCount }
+    })
   } catch (_error) {
     if (id.includes("demo")) {
        return NextResponse.json({ id, title: "Demo Tournament", status: "DRAFT" })
@@ -61,27 +70,29 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
   const { id } = await params
 
   try {
+    await connectToDatabase()
     const body = await req.json()
     const validatedData = tournamentSchema.parse(body)
 
-    const tournament = await prisma.tournament.update({
-      where: { id },
-      data: {
+    const tournament = await Tournament.findByIdAndUpdate(
+      id,
+      {
         ...validatedData,
         startDate: new Date(validatedData.startDate),
         endDate: new Date(validatedData.endDate),
         registrationOpens: new Date(validatedData.registrationOpens),
         registrationDeadline: new Date(validatedData.registrationDeadline),
       },
-    })
+      { new: true }
+    )
 
     return NextResponse.json(tournament)
   } catch (error: unknown) {
-    const err = error as { message?: string };
+    const err = error as { message?: string, name?: string };
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.issues }, { status: 400 })
     }
-    if (err.message?.includes("Can't reach database") || id.includes("demo")) {
+    if (err.name === "MongooseError" || id.includes("demo")) {
       return NextResponse.json({ id, message: "Updated (Demo Mode)" })
     }
     console.error("Tournament update error:", error)
@@ -98,20 +109,19 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
   const { id } = await params
 
   try {
+    await connectToDatabase()
     // Check if entries exist
-    const entriesCount = await prisma.tournamentApplication.count({
-      where: { tournamentId: id }
-    })
+    const entriesCount = await TournamentApplication.countDocuments({ tournamentId: id })
 
     if (entriesCount > 0) {
       return NextResponse.json({ error: "Cannot delete tournament with registered players" }, { status: 400 })
     }
 
-    await prisma.tournament.delete({ where: { id } })
+    await Tournament.findByIdAndDelete(id)
     return NextResponse.json({ message: "Deleted successfully" })
   } catch (error: unknown) {
-    const err = error as { message?: string };
-    if (err.message?.includes("Can't reach database") || id.includes("demo")) {
+    const err = error as { message?: string, name?: string };
+    if (err.name === "MongooseError" || id.includes("demo")) {
       return NextResponse.json({ message: "Deleted successfully (Demo Mode)" })
     }
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
@@ -127,25 +137,26 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   const { id } = await params
 
   try {
+    await connectToDatabase()
     const body = await req.json()
     const { status } = body
     if (!status) {
        return NextResponse.json({ error: "Status is required" }, { status: 400 })
     }
 
-    const tournament = await prisma.tournament.update({
-      where: { id },
-      data: { status }
-    })
+    const tournament = await Tournament.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    )
 
     return NextResponse.json(tournament)
   } catch (error: unknown) {
-    const err = error as { message?: string };
-    if (err.message?.includes("Can't reach database") || id.includes("demo")) {
+    const err = error as { message?: string, name?: string };
+    if (err.name === "MongooseError" || id.includes("demo")) {
       return NextResponse.json({ id, status: "UPDATED", message: "Status updated (Demo Mode)" })
     }
     console.error("Tournament patch error:", error)
     return NextResponse.json({ error: "Internal Server Error" }, { status: 500 })
   }
 }
-

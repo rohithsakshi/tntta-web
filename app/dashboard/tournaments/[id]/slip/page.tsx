@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth"
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { TournamentApplication } from "@/models"
 import { notFound, redirect } from "next/navigation"
 import SlipView from "./SlipView"
 
@@ -11,20 +12,23 @@ export default async function RegistrationSlipPage({ params }: { params: Promise
 
   const { id } = await params
 
-  const application = await prisma.tournamentApplication.findUnique({
-    where: { id },
-    include: {
-      tournament: true,
-      player: true
-    }
-  })
+  await connectToDatabase();
+  const applicationRaw = await TournamentApplication.findById(id)
+    .populate("tournamentId")
+    .populate("playerId")
+    .lean();
 
-  if (!application || (application.playerId !== session.user.id && session.user.role !== "ADMIN")) {
+  if (!applicationRaw || (applicationRaw.playerId?._id.toString() !== session.user.id && session.user.role !== "ADMIN")) {
     notFound()
   }
 
-  // Convert application to a plain object to avoid serialization issues
-  const plainApplication = JSON.parse(JSON.stringify(application))
+  // Normalize data for SlipView
+  const application = {
+    ...applicationRaw,
+    id: applicationRaw._id.toString(),
+    tournament: applicationRaw.tournamentId,
+    player: applicationRaw.playerId
+  };
 
-  return <SlipView application={plainApplication} />
+  return <SlipView application={application} />
 }

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth"
-import prisma from "@/lib/prisma"
-import { User, Mail, Phone, MapPin, Building2, Calendar, Award, Edit } from "lucide-react"
+import connectToDatabase from "@/lib/mongodb"
+import { User as UserModel } from "@/models"
+import { User, Mail, Phone, MapPin, Building2, Calendar, Award, Edit, Trophy, ShieldCheck } from "lucide-react"
 import { format } from "date-fns"
 import { redirect } from "next/navigation"
 
@@ -12,9 +13,12 @@ export default async function ProfilePage() {
 
   let user = null;
   try {
-    user = await prisma.user.findUnique({
-      where: { id: session.user.id }
-    })
+    await connectToDatabase();
+    user = await UserModel.findById(session.user.id).lean();
+    
+    if (!user) {
+        throw new Error("User not found");
+    }
   } catch (error) {
     console.info("Using mock user data (Database offline)")
     user = {
@@ -26,12 +30,9 @@ export default async function ProfilePage() {
       district: "Chennai",
       club: "Default Club",
       dob: new Date("2000-01-01"),
-      category: "MENS", // Keeping for compatibility in mock
       categories: ["MENS"]
     }
   }
-
-  if (!user) return null
 
   const profileItems = [
     { label: "Full Name", value: `${user.firstName} ${user.lastName}`, icon: User },
@@ -40,8 +41,8 @@ export default async function ProfilePage() {
     { label: "Email Address", value: user.email || "Not provided", icon: Mail },
     { label: "District", value: user.district, icon: MapPin },
     { label: "Club", value: user.club || "Unattached", icon: Building2 },
-    { label: "Date of Birth", value: format(new Date(user.dob), "PPP"), icon: Calendar },
-    { label: "Default Category", value: (user.categories?.[0] || user.category || "MENS").replace("_", " "), icon: Trophy },
+    { label: "Date of Birth", value: user.dob ? format(new Date(user.dob), "PPP") : "N/A", icon: Calendar },
+    { label: "Default Category", value: ((user.categories as string[])?.[0] || "MENS").replace("_", " "), icon: Trophy },
   ]
 
   return (
@@ -100,6 +101,3 @@ export default async function ProfilePage() {
     </div>
   )
 }
-
-import { Trophy, ShieldCheck } from "lucide-react"
-import { BarChart3 } from "lucide-react"

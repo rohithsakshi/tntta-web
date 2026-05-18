@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { MatchStatus } from "@prisma/client";
+import connectToDatabase from "@/lib/mongodb";
+import { MatchSlot, MatchStatus } from "@/models";
 import { pusher } from "@/lib/pusher";
 
 export async function POST(
@@ -10,20 +10,26 @@ export async function POST(
   const { matchId } = await params;
 
   try {
-    const match = await prisma.matchSlot.update({
-      where: { id: matchId },
-      data: {
+    await connectToDatabase();
+    
+    const match = await MatchSlot.findByIdAndUpdate(
+      matchId,
+      {
         status: MatchStatus.CALLING,
         noShowGraceUntil: new Date(Date.now() + 5 * 60 * 1000), // 5 min grace
       },
-      include: { player1: true, player2: true },
-    });
+      { new: true }
+    ).populate("player1Id").populate("player2Id");
+
+    if (!match) {
+      return NextResponse.json({ error: "Match not found" }, { status: 404 });
+    }
 
     await pusher.trigger(`tournament-${match.tournamentId}-fixtures`, "match.calling", {
       matchId,
       tableNumber: match.tableNumber,
-      player1: match.player1,
-      player2: match.player2,
+      player1: match.player1Id,
+      player2: match.player2Id,
     });
 
     return NextResponse.json({ success: true, match });

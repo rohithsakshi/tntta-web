@@ -1,4 +1,5 @@
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { RankingEntry } from "@/models"
 import { 
   BarChart3, 
   Trophy, 
@@ -17,16 +18,20 @@ async function getRankingStats() {
   const currentSeason = "2025-26"
   
   try {
-    if (!prisma) throw new Error("Database connection not established")
+    await connectToDatabase();
     
-    const [totalRanked, categories] = await Promise.all([
-      prisma.rankingEntry.count({ where: { season: currentSeason } }),
-      prisma.rankingEntry.groupBy({
-        by: ["category"],
-        where: { season: currentSeason },
-        _count: true
-      })
+    const [totalRanked, categoriesAgg] = await Promise.all([
+      RankingEntry.countDocuments({ season: currentSeason }),
+      RankingEntry.aggregate([
+        { $match: { season: currentSeason } },
+        { $group: { _id: "$category", count: { $sum: 1 } } }
+      ])
     ])
+
+    const categories = categoriesAgg.map((c: any) => ({
+      category: c._id,
+      _count: c.count
+    }));
 
     return { totalRanked, categories, currentSeason }
   } catch (error) {

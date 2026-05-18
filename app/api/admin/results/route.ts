@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { MatchResult, UserRole } from "@/models"
 import { auth } from "@/lib/auth"
-import { UserRole } from "@prisma/client"
 import { z } from "zod"
 
 const matchResultSchema = z.object({
@@ -21,12 +21,11 @@ export async function POST(req: Request) {
   }
 
   try {
+    await connectToDatabase()
     const body = await req.json()
     const validatedData = matchResultSchema.parse(body)
 
-    const matchResult = await prisma.matchResult.create({
-      data: validatedData
-    })
+    const matchResult = await MatchResult.create(validatedData)
 
     return NextResponse.json(matchResult, { status: 201 })
   } catch (error) {

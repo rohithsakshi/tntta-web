@@ -1,4 +1,5 @@
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { NewsItem } from "@/models"
 import { 
   Newspaper, 
   Plus, 
@@ -20,14 +21,17 @@ export const dynamic = "force-dynamic"
 
 async function getNewsData() {
   try {
-    if (!prisma) return []
-    const news = await prisma.newsItem.findMany({
-      orderBy: { publishedAt: "desc" },
-      include: {
-        author: true
-      }
-    })
-    return news
+    await connectToDatabase();
+    const newsRaw = await NewsItem.find({})
+      .sort({ publishedAt: -1 })
+      .populate("authorId")
+      .lean();
+    
+    return newsRaw.map((n: any) => ({
+      ...n,
+      id: n._id.toString(),
+      author: n.authorId
+    }));
   } catch (error) {
     console.warn("News data fetch failed:", error)
     return []

@@ -1,10 +1,18 @@
 import { NextResponse } from "next/server"
-import prisma from "@/lib/prisma"
+import mongoose from "mongoose"
+import connectToDatabase from "@/lib/mongodb"
+
 export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
-    await prisma.$queryRaw`SELECT 1`
+    await connectToDatabase()
+    const isConnected = mongoose.connection.readyState === 1
+    
+    if (!isConnected) {
+      throw new Error("MongoDB not connected")
+    }
+
     return NextResponse.json({ 
       status: "ok", 
       timestamp: new Date().toISOString(), 

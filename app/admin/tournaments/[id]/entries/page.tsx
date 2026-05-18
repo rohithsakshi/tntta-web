@@ -1,4 +1,5 @@
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { Tournament, TournamentApplication } from "@/models"
 import { 
   ArrowLeft, 
   Users, 
@@ -19,31 +20,37 @@ import EntriesTable from "./EntriesTable"
 export const dynamic = "force-dynamic"
 
 async function getTournamentEntries(id: string) {
-  const tournament = await prisma.tournament.findUnique({
-    where: { id },
-    include: {
-      applications: {
-        include: {
-          player: true
-        },
-        orderBy: { appliedAt: "desc" }
-      },
-      _count: {
-        select: { applications: true }
-      }
+  try {
+    await connectToDatabase();
+    const tournamentRaw = await Tournament.findById(id).lean();
+    if (!tournamentRaw) return null;
+
+    const applicationsRaw = await TournamentApplication.find({ tournamentId: id })
+      .populate("playerId")
+      .sort({ appliedAt: -1 })
+      .lean();
+
+    const applications = applicationsRaw.map((app: any) => ({
+      ...app,
+      id: app._id.toString(),
+      player: app.playerId
+    }));
+
+    const stats = {
+      total: applications.length,
+      paid: applications.filter((a: any) => a.paymentStatus === "PAID").length,
+      pending: applications.filter((a: any) => a.paymentStatus === "PENDING").length,
+      failed: applications.filter((a: any) => a.paymentStatus === "FAILED").length,
     }
-  })
 
-  if (!tournament) return null
-
-  const stats = {
-    total: (tournament as any)._count.applications,
-    paid: (tournament as any).applications.filter((a: any) => a.paymentStatus === "PAID").length,
-    pending: (tournament as any).applications.filter((a: any) => a.paymentStatus === "PENDING").length,
-    failed: (tournament as any).applications.filter((a: any) => a.paymentStatus === "FAILED").length,
+    return { 
+      tournament: { ...tournamentRaw, id: tournamentRaw._id.toString(), applications }, 
+      stats 
+    }
+  } catch (error) {
+    console.error("Error fetching tournament entries:", error);
+    return null;
   }
-
-  return { tournament, stats }
 }
 
 export default async function TournamentEntriesPage({ params }: { params: Promise<{ id: string }> }) {

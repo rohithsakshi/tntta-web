@@ -1,56 +1,55 @@
 import React from 'react';
-import { MatchStatus } from '@prisma/client';
-import prisma from '@/lib/prisma';
+import connectToDatabase from '@/lib/mongodb';
+import { MatchSlot, TableStatus, MatchStatus } from '@/models';
 import LiveFixturesBoard from '@/components/fixtures/LiveFixturesBoard';
 
 export const dynamic = "force-dynamic";
 
 async function getFixtures(tournamentId: string) {
-  if (!prisma) return { playingNow: [], upNext: [] };
+  try {
+    await connectToDatabase();
 
-  const [tableStatuses, upNext] = await Promise.all([
-    prisma.tableStatus.findMany({
-      where: { tournamentId },
-      orderBy: { tableNumber: 'asc' },
-    }),
-    prisma.matchSlot.findMany({
-      where: {
+    const [tableStatusesRaw, upNextRaw] = await Promise.all([
+      TableStatus.find({ tournamentId })
+        .sort({ tableNumber: 1 })
+        .lean(),
+      MatchSlot.find({
         tournamentId,
         status: MatchStatus.SCHEDULED,
-      },
-      orderBy: { scheduledStartTime: 'asc' },
-      take: 10,
-      include: {
-        player1: true,
-        player2: true,
-      },
-    }),
-  ]);
+      })
+      .sort({ scheduledStartTime: 1 })
+      .limit(10)
+      .populate("player1Id")
+      .populate("player2Id")
+      .lean(),
+    ]);
 
-  // Fetch current match details for each table
-  const tablesWithMatches = await Promise.all(
-    tableStatuses.map(async (table: any) => {
-      let currentMatch = null;
-      if (table.currentMatchId) {
-        currentMatch = await prisma.matchSlot.findUnique({
-          where: { id: table.currentMatchId },
-          include: {
-            player1: true,
-            player2: true,
-          },
-        });
-      }
-      return {
-        ...table,
-        currentMatch,
-      };
-    })
-  );
+    // Fetch current match details for each table
+    const tablesWithMatches = await Promise.all(
+      tableStatusesRaw.map(async (table: any) => {
+        let currentMatch = null;
+        if (table.currentMatchId) {
+          currentMatch = await MatchSlot.findById(table.currentMatchId)
+            .populate("player1Id")
+            .populate("player2Id")
+            .lean();
+        }
+        return {
+          ...table,
+          id: table._id.toString(),
+          currentMatch: currentMatch ? { ...currentMatch, id: currentMatch._id.toString(), player1: currentMatch.player1Id, player2: currentMatch.player2Id } : null,
+        };
+      })
+    );
 
-  return {
-    playingNow: tablesWithMatches,
-    upNext,
-  };
+    return {
+      playingNow: tablesWithMatches,
+      upNext: upNextRaw.map((m: any) => ({ ...m, id: m._id.toString(), player1: m.player1Id, player2: m.player2Id })),
+    };
+  } catch (error) {
+    console.error("Error fetching fixtures:", error);
+    return { playingNow: [], upNext: [] };
+  }
 }
 
 export default async function PublicFixturesPage({ params }: { params: Promise<{ id: string }> }) {

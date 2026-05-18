@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { MatchStatus, TableStatusEnum } from "@prisma/client";
+import connectToDatabase from "@/lib/mongodb";
+import { 
+  MatchSlot, 
+  MatchResult, 
+  User, 
+  TableStatus, 
+  MatchStatus, 
+  TableStatusEnum 
+} from "@/models";
 import { pusher } from "@/lib/pusher";
 import { advanceTable } from "@/lib/fixtures/reshuffler";
 
@@ -12,90 +19,69 @@ export async function POST(
   const { score, winnerId } = await req.json();
 
   try {
-    const match = await prisma.matchSlot.findUnique({
-      where: { id: matchId },
-    });
+    await connectToDatabase();
+    
+    const match = await MatchSlot.findById(matchId);
 
     if (!match) return NextResponse.json({ error: "Match not found" }, { status: 404 });
 
-    const updatedMatch = await prisma.$transaction(async (tx: any) => {
-      // 1. Update Match Slot
-      const m = await tx.matchSlot.update({
-        where: { id: matchId },
-        data: {
-          status: MatchStatus.COMPLETED,
-          score,
-          winnerId,
-          actualEndTime: new Date(),
-        },
-      });
+    // 1. Update Match Slot
+    const updatedMatch = await MatchSlot.findByIdAndUpdate(
+      matchId,
+      {
+        status: MatchStatus.COMPLETED,
+        score,
+        winnerId,
+        actualEndTime: new Date(),
+      },
+      { new: true }
+    );
 
-      // 2. Save Match Result (historical record)
-      await tx.matchResult.create({
-        data: {
-          tournamentId: match.tournamentId,
-          player1Id: match.player1Id!,
-          player2Id: match.player2Id!,
-          winnerId,
-          score,
-          round: match.round,
-          category: match.category,
-        }
-      });
-
-      // 3. Assign Ranking Points (Winner +10, Loser +7 SF, etc - Simplified)
-      // Winner points
-      await tx.user.update({
-        where: { id: winnerId },
-        data: { rankingPoints: { increment: 10 } },
-      });
-      // Loser points
-      const loserId = match.player1Id === winnerId ? match.player2Id : match.player1Id;
-      if (loserId) {
-        await tx.user.update({
-          where: { id: loserId },
-          data: { rankingPoints: { increment: 5 } },
-        });
-      }
-
-      // 4. Update Table Status
-      await tx.tableStatus.update({
-        where: {
-          tournamentId_tableNumber: {
-            tournamentId: match.tournamentId,
-            tableNumber: match.tableNumber,
-          }
-        },
-        data: {
-          status: TableStatusEnum.IDLE,
-          currentMatchId: null, // Next match will be assigned by advanceTable
-        },
-      });
-
-      return m;
+    // 2. Save Match Result (historical record)
+    await MatchResult.create({
+      tournamentId: match.tournamentId,
+      player1Id: match.player1Id,
+      player2Id: match.player2Id,
+      winnerId,
+      score,
+      round: match.round,
+      category: match.category,
     });
+
+    // 3. Assign Ranking Points (Winner +10, Loser +5 - Simplified)
+    await User.findByIdAndUpdate(winnerId, { $inc: { rankingPoints: 10 } });
+    
+    const loserId = match.player1Id.toString() === winnerId ? match.player2Id : match.player1Id;
+    if (loserId) {
+      await User.findByIdAndUpdate(loserId, { $inc: { rankingPoints: 5 } });
+    }
+
+    // 4. Update Table Status
+    await TableStatus.findOneAndUpdate(
+      { tournamentId: match.tournamentId, tableNumber: match.tableNumber },
+      {
+        status: TableStatusEnum.IDLE,
+        currentMatchId: null,
+      }
+    );
 
     // 5. Advance winner in bracket
     const nextRound = match.roundNumber + 1;
     const nextPosition = Math.floor(match.position / 2);
     const isPlayer1Slot = match.position % 2 === 0;
 
-    const nextMatch = await prisma.matchSlot.findFirst({
-      where: {
-        tournamentId: match.tournamentId,
-        category: match.category,
-        eventType: match.eventType,
-        roundNumber: nextRound,
-        position: nextPosition,
-      }
+    const nextMatch = await MatchSlot.findOne({
+      tournamentId: match.tournamentId,
+      category: match.category,
+      eventType: match.eventType,
+      roundNumber: nextRound,
+      position: nextPosition,
     });
 
     if (nextMatch) {
-      await prisma.matchSlot.update({
-        where: { id: nextMatch.id },
-        data: {
-          [isPlayer1Slot ? 'player1Id' : 'player2Id']: winnerId,
-        }
+      const updateField = isPlayer1Slot ? 'player1Id' : 'player2Id';
+      await MatchSlot.findByIdAndUpdate(nextMatch.id, {
+        [updateField]: winnerId,
       });
     }
 
@@ -115,7 +101,7 @@ export async function POST(
     ]);
 
     // 7. Advance table
-    await advanceTable(match.tournamentId, match.tableNumber);
+    await advanceTable(match.tournamentId.toString(), match.tableNumber);
 
     return NextResponse.json({ success: true, match: updatedMatch });
 

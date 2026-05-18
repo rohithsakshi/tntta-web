@@ -1,55 +1,54 @@
 import React from 'react';
-import { MatchStatus } from '@prisma/client';
-import prisma from '@/lib/prisma';
+import connectToDatabase from '@/lib/mongodb';
+import { MatchSlot, TableStatus, MatchStatus } from '@/models';
 import AdminFixturesControl from '@/components/fixtures/AdminFixturesControl';
 
 export const dynamic = "force-dynamic";
 
 async function getAdminData(tournamentId: string) {
-  if (!prisma) return { tables: [], upNext: [] };
+  try {
+    await connectToDatabase();
 
-  const [tableStatuses, upNext] = await Promise.all([
-    prisma.tableStatus.findMany({
-      where: { tournamentId },
-      orderBy: { tableNumber: 'asc' },
-    }),
-    prisma.matchSlot.findMany({
-      where: {
+    const [tableStatusesRaw, upNextRaw] = await Promise.all([
+      TableStatus.find({ tournamentId })
+        .sort({ tableNumber: 1 })
+        .lean(),
+      MatchSlot.find({
         tournamentId,
         status: MatchStatus.SCHEDULED,
-      },
-      orderBy: { scheduledStartTime: 'asc' },
-      take: 20,
-      include: {
-        player1: true,
-        player2: true,
-      },
-    }),
-  ]);
+      })
+      .sort({ scheduledStartTime: 1 })
+      .limit(20)
+      .populate("player1Id")
+      .populate("player2Id")
+      .lean(),
+    ]);
 
-  const tablesWithMatches = await Promise.all(
-    tableStatuses.map(async (table: any) => {
-      let currentMatch = null;
-      if (table.currentMatchId) {
-        currentMatch = await prisma.matchSlot.findUnique({
-          where: { id: table.currentMatchId },
-          include: {
-            player1: true,
-            player2: true,
-          },
-        });
-      }
-      return {
-        ...table,
-        currentMatch,
-      };
-    })
-  );
+    const tablesWithMatches = await Promise.all(
+      tableStatusesRaw.map(async (table: any) => {
+        let currentMatch = null;
+        if (table.currentMatchId) {
+          currentMatch = await MatchSlot.findById(table.currentMatchId)
+            .populate("player1Id")
+            .populate("player2Id")
+            .lean();
+        }
+        return {
+          ...table,
+          id: table._id.toString(),
+          currentMatch: currentMatch ? { ...currentMatch, id: currentMatch._id.toString(), player1: currentMatch.player1Id, player2: currentMatch.player2Id } : null,
+        };
+      })
+    );
 
-  return {
-    tables: tablesWithMatches,
-    upNext,
-  };
+    return {
+      tables: tablesWithMatches,
+      upNext: upNextRaw.map((m: any) => ({ ...m, id: m._id.toString(), player1: m.player1Id, player2: m.player2Id })),
+    };
+  } catch (error) {
+    console.error("Error fetching admin fixture data:", error);
+    return { tables: [], upNext: [] };
+  }
 }
 
 export default async function AdminFixturePage({ params }: { params: Promise<{ tournamentId: string }> }) {

@@ -1,24 +1,32 @@
 import { Trophy, ArrowUp, ArrowDown, Minus, Search } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import prisma from "@/lib/prisma"
-import { Category, Gender } from "@prisma/client"
+import connectToDatabase from "@/lib/mongodb"
+import { User, Category, Gender } from "@/models"
 
 export const dynamic = "force-dynamic"
 
 async function getRankings(category?: string, gender?: string) {
   try {
-    const players = await prisma.user.findMany({
-      where: {
-        role: "PLAYER",
-        categories: category && category !== "ALL" ? { has: category as Category } : undefined,
-        gender: gender && gender !== "ALL" ? (gender as Gender) : undefined,
-      },
-      orderBy: { rankingPoints: "desc" },
-      take: 50,
-    })
+    await connectToDatabase();
+    
+    const query: any = { role: "PLAYER" };
+    if (category && category !== "ALL") {
+      query.categories = category;
+    }
+    if (gender && gender !== "ALL") {
+      query.gender = gender;
+    }
 
-    return players
+    const players = await User.find(query)
+      .sort({ rankingPoints: -1 })
+      .limit(50)
+      .lean();
+
+    return players.map((p: any) => ({
+      ...p,
+      id: p._id.toString()
+    }));
   } catch (error) {
     console.warn("Error fetching rankings (DB offline):", error)
     return []

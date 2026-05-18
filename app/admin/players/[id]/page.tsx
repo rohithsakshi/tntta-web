@@ -1,4 +1,5 @@
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { User as UserModel, TournamentApplication, MatchSlot, RankingEntry } from "@/models"
 import { notFound } from "next/navigation"
 import { 
   ArrowLeft, 
@@ -23,19 +24,61 @@ import { format } from "date-fns"
 export const dynamic = "force-dynamic"
 
 async function getPlayerData(id: string) {
-  const player = await prisma.user.findUnique({
-    where: { id },
-    include: {
-      applications: {
-        include: { tournament: true },
-        orderBy: { appliedAt: "desc" }
-      },
-      matchesAsPlayer1: { include: { tournament: true, player2: true, winner: true }, take: 10 },
-      matchesAsPlayer2: { include: { tournament: true, player1: true, winner: true }, take: 10 },
-      rankingEntries: { orderBy: { updatedAt: "desc" } }
-    }
-  })
-  return player
+  try {
+    await connectToDatabase();
+    const playerRaw = await UserModel.findById(id).lean();
+    if (!playerRaw) return null;
+
+    const [applications, matchesAsPlayer1, matchesAsPlayer2, rankingEntries] = await Promise.all([
+      TournamentApplication.find({ playerId: id })
+        .populate("tournamentId")
+        .sort({ appliedAt: -1 })
+        .lean(),
+      MatchSlot.find({ player1Id: id })
+        .populate("tournamentId")
+        .populate("player2Id")
+        .populate("winnerId")
+        .limit(10)
+        .lean(),
+      MatchSlot.find({ player2Id: id })
+        .populate("tournamentId")
+        .populate("player1Id")
+        .populate("winnerId")
+        .limit(10)
+        .lean(),
+      RankingEntry.find({ playerId: id })
+        .sort({ updatedAt: -1 })
+        .lean()
+    ]);
+
+    return {
+      ...playerRaw,
+      id: playerRaw._id.toString(),
+      applications: applications.map((app: any) => ({
+        ...app,
+        id: app._id.toString(),
+        tournament: app.tournamentId
+      })),
+      matchesAsPlayer1: matchesAsPlayer1.map((m: any) => ({
+        ...m,
+        id: m._id.toString(),
+        tournament: m.tournamentId,
+        player2: m.player2Id,
+        winner: m.winnerId
+      })),
+      matchesAsPlayer2: matchesAsPlayer2.map((m: any) => ({
+        ...m,
+        id: m._id.toString(),
+        tournament: m.tournamentId,
+        player1: m.player1Id,
+        winner: m.winnerId
+      })),
+      rankingEntries
+    };
+  } catch (error) {
+    console.error("Error fetching player data:", error);
+    return null;
+  }
 }
 
 export default async function PlayerDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -46,7 +89,7 @@ export default async function PlayerDetailPage({ params }: { params: Promise<{ i
 
   // Combine and sort matches
   const allMatches = [...player.matchesAsPlayer1, ...player.matchesAsPlayer2].sort(
-    (a, b) => new Date(b.playedAt).getTime() - new Date(a.playedAt).getTime()
+    (a, b) => new Date(b.updatedAt || b.createdAt).getTime() - new Date(a.updatedAt || a.createdAt).getTime()
   )
 
   return (
@@ -120,7 +163,7 @@ export default async function PlayerDetailPage({ params }: { params: Promise<{ i
                   </div>
                   <div className="p-4 bg-gray-50 rounded-2xl">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Category</p>
-                    <p className="font-bold text-gray-900 text-sm">{player.category}</p>
+                    <p className="font-bold text-gray-900 text-sm">{(player.categories?.[0] || "N/A").replace("_", " ")}</p>
                   </div>
                 </div>
 
@@ -135,7 +178,7 @@ export default async function PlayerDetailPage({ params }: { params: Promise<{ i
                    </div>
                    <div className="flex items-center gap-3 text-sm text-gray-600">
                       <Calendar size={16} className="text-[#E85D04]" />
-                      <span>Born {format(new Date(player.dob), "PPP")}</span>
+                      <span>Born {player.dob ? format(new Date(player.dob), "PPP") : "N/A"}</span>
                    </div>
                 </div>
              </div>
@@ -172,16 +215,16 @@ export default async function PlayerDetailPage({ params }: { params: Promise<{ i
                   <div key={app.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-3xl border border-gray-100 group hover:border-[#E85D04]/30 transition-all">
                     <div className="flex items-center gap-6">
                       <div className="w-12 h-12 rounded-xl bg-white border border-gray-100 flex items-center justify-center text-[#E85D04] font-bebas text-xl">
-                        {app.tournament.startDate.getFullYear()}
+                        {app.tournament?.startDate ? new Date(app.tournament.startDate).getFullYear() : "N/A"}
                       </div>
                       <div>
-                        <p className="font-bold text-gray-900 group-hover:text-[#E85D04] transition-colors">{app.tournament.title}</p>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Applied {format(new Date(app.appliedAt), "MMM d")}</p>
+                        <p className="font-bold text-gray-900 group-hover:text-[#E85D04] transition-colors">{app.tournament?.title || "Unknown Tournament"}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">Applied {app.appliedAt ? format(new Date(app.appliedAt), "MMM d") : "N/A"}</p>
                       </div>
                     </div>
                     <div className="text-right">
                        <StatusBadge status={app.paymentStatus} type="payment" />
-                       <p className="text-[10px] font-bold text-gray-900 mt-2">₹{app.amount / 100}</p>
+                       <p className="text-[10px] font-bold text-gray-900 mt-2">₹{(app.amount || 0) / 100}</p>
                     </div>
                   </div>
                 ))}
@@ -199,17 +242,17 @@ export default async function PlayerDetailPage({ params }: { params: Promise<{ i
              </h3>
              <div className="space-y-4">
                 {(allMatches as any[]).map((match) => {
-                  const opponent = match.player1Id === player.id ? match.player2 : match.player1
-                  const isWinner = match.winnerId === player.id
+                  const opponent = match.player1Id?.toString() === player.id?.toString() ? match.player2 : match.player1
+                  const isWinner = match.winnerId?.toString() === player.id?.toString()
                   return (
                     <div key={match.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-3xl border border-gray-100">
                       <div className="flex-1">
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{match.tournament.title}</p>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{match.tournament?.title || "Unknown Tournament"}</p>
                         <div className="flex items-center gap-4">
                            <span className={`px-3 py-1 rounded-lg text-[10px] font-bold ${isWinner ? "bg-green-50 text-green-600" : "bg-red-50 text-red-600"}`}>
                              {isWinner ? "W" : "L"}
                            </span>
-                           <p className="font-bold text-gray-900">vs {opponent.firstName} {opponent.lastName}</p>
+                           <p className="font-bold text-gray-900">vs {opponent?.firstName} {opponent?.lastName}</p>
                         </div>
                       </div>
                       <div className="text-right">

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
-import { MatchStatus } from "@prisma/client";
+import connectToDatabase from "@/lib/mongodb";
+import { MatchSlot, TournamentBracket, TableStatus, MatchStatus } from "@/models";
 
 export async function GET(
   req: NextRequest,
@@ -12,20 +12,26 @@ export async function GET(
   const category = searchParams.get("category");
 
   try {
-    const fixtures = await prisma.matchSlot.findMany({
-      where: {
-        tournamentId,
-        ...(table ? { tableNumber: parseInt(table) } : {}),
-        ...(category ? { category } : {}),
-      },
-      orderBy: { scheduledStartTime: "asc" },
-      include: {
-        player1: true,
-        player2: true,
-      },
-    });
+    await connectToDatabase();
+    
+    const query: any = { tournamentId };
+    if (table) query.tableNumber = parseInt(table);
+    if (category) query.category = category;
 
-    return NextResponse.json(fixtures);
+    const fixtures = await MatchSlot.find(query)
+      .sort({ scheduledStartTime: 1 })
+      .populate("player1Id")
+      .populate("player2Id")
+      .lean();
+
+    const normalizedFixtures = fixtures.map((f: any) => ({
+      ...f,
+      id: f._id.toString(),
+      player1: f.player1Id,
+      player2: f.player2Id
+    }));
+
+    return NextResponse.json(normalizedFixtures);
   } catch (error) {
     return NextResponse.json({ error: "Failed to fetch fixtures" }, { status: 500 });
   }
@@ -38,12 +44,13 @@ export async function DELETE(
   const { tournamentId } = await params;
 
   try {
-    await prisma.$transaction([
-      prisma.matchSlot.deleteMany({ where: { tournamentId } }),
-      prisma.teamMatch.deleteMany({ where: { tournamentId } }),
-      prisma.tournamentBracket.deleteMany({ where: { tournamentId } }),
-      prisma.tableStatus.deleteMany({ where: { tournamentId } }),
-    ]);
+    await connectToDatabase();
+    
+    // Clear all related collections
+    await MatchSlot.deleteMany({ tournamentId });
+    // await TeamMatch.deleteMany({ tournamentId });
+    await TournamentBracket.deleteMany({ tournamentId });
+    await TableStatus.deleteMany({ tournamentId });
 
     return NextResponse.json({ success: true, message: "All fixtures deleted" });
   } catch (error) {

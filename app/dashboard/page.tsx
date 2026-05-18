@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { auth } from "@/lib/auth"
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { User, TournamentApplication, MatchResult } from "@/models"
 import { Trophy, Calendar, Target, Award, ChevronRight, BarChart3 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
@@ -9,13 +10,12 @@ export const dynamic = "force-dynamic"
 
 async function getPlayerStats(userId: string) {
   try {
-    const [user, applications, matches] = await Promise.all([
-      prisma.user.findUnique({ where: { id: userId } }),
-      prisma.tournamentApplication.count({ where: { playerId: userId } }),
-      prisma.matchResult.count({
-        where: {
-          OR: [{ player1Id: userId }, { player2Id: userId }]
-        }
+    await connectToDatabase();
+    const [user, applicationsCount, matchesCount] = await Promise.all([
+      User.findById(userId).lean(),
+      TournamentApplication.countDocuments({ playerId: userId }),
+      MatchResult.countDocuments({
+        $or: [{ player1Id: userId }, { player2Id: userId }]
       }),
     ])
 
@@ -23,7 +23,11 @@ async function getPlayerStats(userId: string) {
       throw new Error("User not found in database")
     }
 
-    return { user, applications, matches }
+    return { 
+      user: { ...user, id: (user as any)._id.toString() }, 
+      applications: applicationsCount, 
+      matches: matchesCount 
+    }
   } catch (error) {
     console.info("Info: Dashboard data fetch currently offline.")
     return {
@@ -100,7 +104,7 @@ export default async function DashboardPage() {
           { label: "Ranking Points", value: user.rankingPoints, icon: BarChart3, color: "text-[#E85D04]", bg: "bg-orange-50" },
           { label: "Tournaments", value: applications, icon: Trophy, color: "text-[#0077B6]", bg: "bg-blue-50" },
           { label: "Matches Played", value: matches, icon: Target, color: "text-[#2D6A4F]", bg: "bg-green-50" },
-          { label: "Category", value: user.categories?.[0]?.replace("_", " ") || "UNASSIGNED", icon: Award, color: "text-purple-600", bg: "bg-purple-50" },
+          { label: "Category", value: (user.categories as string[])?.[0]?.replace("_", " ") || "UNASSIGNED", icon: Award, color: "text-purple-600", bg: "bg-purple-50" },
         ].map((stat, i) => (
           <div key={i} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-6">
             <div className={`w-14 h-14 rounded-2xl ${stat.bg} ${stat.color} flex items-center justify-center`}>

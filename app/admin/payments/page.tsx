@@ -1,4 +1,5 @@
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { TournamentApplication } from "@/models"
 import { 
   CreditCard, 
   TrendingUp, 
@@ -21,32 +22,44 @@ export const dynamic = "force-dynamic"
 
 async function getPaymentData() {
   try {
-    if (!prisma) throw new Error("Prisma not initialized")
+    await connectToDatabase();
 
-    const [payments, stats] = await Promise.all([
-      prisma.tournamentApplication.findMany({
-        orderBy: { appliedAt: "desc" },
-        include: {
-          player: true,
-          tournament: true
-        },
-        take: 100
-      }),
-      prisma.tournamentApplication.aggregate({
-        where: { paymentStatus: "PAID" },
-        _sum: { amount: true },
-        _count: true
-      })
+    const [paymentsRaw, stats] = await Promise.all([
+      TournamentApplication.find({})
+        .populate("playerId")
+        .populate("tournamentId")
+        .sort({ appliedAt: -1 })
+        .limit(100)
+        .lean(),
+      TournamentApplication.aggregate([
+        { $match: { paymentStatus: "PAID" } },
+        { 
+          $group: { 
+            _id: null, 
+            totalAmount: { $sum: "$amount" },
+            count: { $sum: 1 }
+          } 
+        }
+      ])
     ])
 
-    const pendingCount = await prisma.tournamentApplication.count({
-      where: { paymentStatus: "PENDING" }
+    const pendingCount = await TournamentApplication.countDocuments({
+      paymentStatus: "PENDING"
     })
+
+    const payments = paymentsRaw.map((p: any) => ({
+      ...p,
+      id: p._id.toString(),
+      player: p.playerId,
+      tournament: p.tournamentId
+    }));
+
+    const resultStats = stats[0] || { totalAmount: 0, count: 0 };
 
     return { 
       payments, 
-      totalRevenue: (stats._sum.amount || 0) / 100,
-      paidCount: stats._count,
+      totalRevenue: resultStats.totalAmount / 100,
+      paidCount: resultStats.count,
       pendingCount
     }
   } catch (error) {

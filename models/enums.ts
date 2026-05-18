@@ -1,0 +1,77 @@
+export enum UserRole {
+  PLAYER = "PLAYER",
+  ADMIN = "ADMIN",
+  DISTRICT_SECRETARY = "DISTRICT_SECRETARY",
+}
+
+export enum Gender {
+  MALE = "MALE",
+  FEMALE = "FEMALE",
+}
+
+export enum Category {
+  MINI_CADET = "MINI_CADET",
+  CADET = "CADET",
+  SUB_JUNIOR = "SUB_JUNIOR",
+  JUNIOR = "JUNIOR",
+  SENIOR = "SENIOR",
+  MENS = "MENS",
+  VETERANS = "VETERANS",
+}
+
+export enum TournamentStatus {
+  DRAFT = "DRAFT",
+  UPCOMING = "UPCOMING",
+  OPEN = "OPEN",
+  CLOSED = "CLOSED",
+  ONGOING = "ONGOING",
+  COMPLETED = "COMPLETED",
+  CANCELLED = "CANCELLED",
+}
+
+export enum TournamentType {
+  STATE_RANKING = "STATE_RANKING",
+  DISTRICT_RANKING = "DISTRICT_RANKING",
+  STATE_CHAMPIONSHIP = "STATE_CHAMPIONSHIP",
+  INVITATIONAL = "INVITATIONAL",
+  OPEN_TOURNAMENT = "OPEN_TOURNAMENT",
+}
+
+export enum PaymentStatus {
+  PENDING = "PENDING",
+  PAID = "PAID",
+  FAILED = "FAILED",
+  REFUNDED = "REFUNDED",
+}
+
+export enum MatchStatus {
+  SCHEDULED = "SCHEDULED",
+  CALLING = "CALLING",
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+  DELAYED = "DELAYED",
+  WALKOVER = "WALKOVER",
+  BYE = "BYE",
+}
+
+export enum EventType {
+  MENS_SINGLES = "MENS_SINGLES",
+  WOMENS_SINGLES = "WOMENS_SINGLES",
+  MENS_DOUBLES = "MENS_DOUBLES",
+  WOMENS_DOUBLES = "WOMENS_DOUBLES",
+  MIXED_DOUBLES = "MIXED_DOUBLES",
+  TEAM = "TEAM",
+}
+
+export enum TeamMatchStatus {
+  SCHEDULED = "SCHEDULED",
+  IN_PROGRESS = "IN_PROGRESS",
+  COMPLETED = "COMPLETED",
+}
+
+export enum TableStatusEnum {
+  IDLE = "IDLE",
+  IN_USE = "IN_USE",
+  DELAYED = "DELAYED",
+  MAINTENANCE = "MAINTENANCE",
+}

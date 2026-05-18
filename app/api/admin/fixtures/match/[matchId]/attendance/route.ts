@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import connectToDatabase from "@/lib/mongodb";
+import { MatchSlot } from "@/models";
 import { pusher } from "@/lib/pusher";
 
 export async function PATCH(
@@ -10,13 +11,20 @@ export async function PATCH(
   const { player1Present, player2Present } = await req.json();
 
   try {
-    const match = await prisma.matchSlot.update({
-      where: { id: matchId },
-      data: {
+    await connectToDatabase();
+    
+    const match = await MatchSlot.findByIdAndUpdate(
+      matchId,
+      {
         player1Present,
         player2Present,
       },
-    });
+      { new: true }
+    );
+
+    if (!match) {
+      return NextResponse.json({ error: "Match not found" }, { status: 404 });
+    }
 
     await pusher.trigger(`tournament-${match.tournamentId}-fixtures`, "table.updated", {
       tableNumber: match.tableNumber,

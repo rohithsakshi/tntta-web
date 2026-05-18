@@ -1,4 +1,5 @@
-import prisma from "@/lib/prisma"
+import connectToDatabase from "@/lib/mongodb"
+import { GalleryImage } from "@/models"
 import { 
   Camera, 
   Upload, 
@@ -15,15 +16,19 @@ export const dynamic = "force-dynamic"
 
 async function getGalleryData() {
   try {
-    if (!prisma) return []
-    const images = await prisma.galleryImage.findMany({
-      orderBy: { createdAt: "desc" },
-      include: {
-        tournament: true,
-        uploadedBy: true
-      }
-    })
-    return images
+    await connectToDatabase();
+    const imagesRaw = await GalleryImage.find({})
+      .sort({ createdAt: -1 })
+      .populate("tournamentId")
+      .populate("uploadedById")
+      .lean();
+    
+    return imagesRaw.map((img: any) => ({
+      ...img,
+      id: img._id.toString(),
+      tournament: img.tournamentId,
+      uploadedBy: img.uploadedById
+    }));
   } catch (error) {
     console.warn("Gallery data fetch failed:", error)
     return []

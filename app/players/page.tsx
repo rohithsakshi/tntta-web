@@ -1,18 +1,22 @@
-import { User, Search, MapPin, Trophy } from "lucide-react"
+import { User as UserIcon, Search, MapPin, Trophy } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import prisma from "@/lib/prisma"
-import type { User as PrismaUser } from "@prisma/client"
+import connectToDatabase from "@/lib/mongodb"
+import { User } from "@/models"
 
 export const dynamic = "force-dynamic"
 
 async function getAllPlayers() {
   try {
-    const players = await prisma.user.findMany({
-      where: { role: "PLAYER" },
-      orderBy: { rankingPoints: "desc" },
-    })
-    return players
+    await connectToDatabase();
+    const players = await User.find({ role: "PLAYER" })
+      .sort({ rankingPoints: -1 })
+      .lean();
+      
+    return players.map((p: any) => ({
+      ...p,
+      id: p._id.toString()
+    }));
   } catch (error) {
     console.warn("Error fetching players:", error)
     return []
@@ -59,7 +63,7 @@ export default async function PlayersPage() {
         {/* Players Grid */}
         {players.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-8">
-            {players.map((player: PrismaUser) => (
+            {players.map((player: any) => (
               <div 
                 key={player.id}
                 className="bg-white rounded-3xl border border-gray-100 shadow-xl overflow-hidden group hover:-translate-y-2 transition-all duration-300"
@@ -100,7 +104,7 @@ export default async function PlayersPage() {
           </div>
         ) : (
           <div className="bg-white rounded-3xl p-32 text-center border border-gray-100 shadow-sm">
-            <User size={64} className="mx-auto text-gray-200 mb-6" />
+            <UserIcon size={64} className="mx-auto text-gray-200 mb-6" />
             <h2 className="text-2xl font-bold text-gray-900 mb-2">No players found</h2>
             <p className="text-gray-500">Try adjusting your search or filters.</p>
           </div>

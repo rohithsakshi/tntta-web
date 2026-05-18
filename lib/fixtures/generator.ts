@@ -1,4 +1,4 @@
-import { MatchStatus, EventType } from "@prisma/client";
+import { MatchStatus, EventType } from "@/models/enums";
 
 export type Player = {
   id: string;
@@ -167,9 +167,9 @@ export function generateFixtures(input: {
         round: isTeam ? `Match ${s + 1}` : match.round,
         category: match.category,
         eventType: match.eventType,
-        player1Id: match.player1?.id || null,
-        player2Id: match.player2?.id || null,
-        status: MatchStatus.SCHEDULED,
+        player1Id: match.player1Id,
+        player2Id: match.player2Id,
+        status: match.status,
       });
 
       tableAvailableTime[earliestTableIdx] = new Date(slotEnd.getTime() + bufferMs);
@@ -207,4 +207,3 @@ function getRoundName(totalRounds: number, currentRound: number): string {
   if (remaining === 2) return "Quarterfinal";
   return `Round of ${Math.pow(2, remaining + 1)}`;
 }
-

@@ -39,17 +39,17 @@ export default async function Results() {
                   {results.map((match: any) => (
                     <tr key={match.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-6 py-4">
-                        <p className="font-bold text-sm text-gray-900 line-clamp-1">{match.tournament.title}</p>
+                        <p className="font-bold text-sm text-gray-900 line-clamp-1">{match.tournament?.title || "Unknown Tournament"}</p>
                         <p className="text-[10px] text-gray-400 uppercase font-bold">{match.category}</p>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col gap-1">
                           <div className={`text-sm flex items-center gap-2 ${match.winnerId === match.player1Id ? "font-bold text-[#2D6A4F]" : "text-gray-600"}`}>
-                            {match.player1.firstName} {match.player1.lastName}
+                            {match.player1?.firstName} {match.player1?.lastName}
                             {match.winnerId === match.player1Id && <Trophy size={14} />}
                           </div>
                           <div className={`text-sm flex items-center gap-2 ${match.winnerId === match.player2Id ? "font-bold text-[#2D6A4F]" : "text-gray-600"}`}>
-                            {match.player2.firstName} {match.player2.lastName}
+                            {match.player2?.firstName} {match.player2?.lastName}
                             {match.winnerId === match.player2Id && <Trophy size={14} />}
                           </div>
                         </div>
@@ -77,7 +77,7 @@ export default async function Results() {
                   <div className="flex justify-between items-start mb-4">
                     <div>
                       <p className="text-[10px] text-gray-400 uppercase font-bold tracking-widest mb-1">{match.category}</p>
-                      <p className="font-bold text-gray-900 line-clamp-1">{match.tournament.title}</p>
+                      <p className="font-bold text-gray-900 line-clamp-1">{match.tournament?.title || "Unknown Tournament"}</p>
                     </div>
                     <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-100 px-2 py-1 rounded">
                       {match.round}
@@ -87,14 +87,14 @@ export default async function Results() {
                   <div className="space-y-3 mb-4">
                     <div className="flex justify-between items-center">
                       <div className={`text-sm flex items-center gap-2 ${match.winnerId === match.player1Id ? "font-bold text-[#2D6A4F]" : "text-gray-600"}`}>
-                        {match.player1.firstName} {match.player1.lastName}
+                        {match.player1?.firstName} {match.player1?.lastName}
                         {match.winnerId === match.player1Id && <Trophy size={14} />}
                       </div>
                       {match.winnerId === match.player1Id && <span className="text-xs font-bold text-[#2D6A4F]">WINNER</span>}
                     </div>
                     <div className="flex justify-between items-center">
                       <div className={`text-sm flex items-center gap-2 ${match.winnerId === match.player2Id ? "font-bold text-[#2D6A4F]" : "text-gray-600"}`}>
-                        {match.player2.firstName} {match.player2.lastName}
+                        {match.player2?.firstName} {match.player2?.lastName}
                         {match.winnerId === match.player2Id && <Trophy size={14} />}
                       </div>
                       {match.winnerId === match.player2Id && <span className="text-xs font-bold text-[#2D6A4F]">WINNER</span>}
